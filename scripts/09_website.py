@@ -83,7 +83,7 @@ CLAUDE_API_KEY = load_api_key()
 # ============================================================
 st.set_page_config(
     page_title="Sarcopenia Drug Discovery Platform",
-    page_icon="💪",
+    page_icon="S",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -213,7 +213,7 @@ df_ok = df[df["처리상태"].isin(["성공", "OK"])].copy() if "처리상태" i
 st.markdown("""
 <div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
      padding: 20px 30px; border-radius: 12px; margin-bottom: 20px;'>
-    <h1 style='color: #e94560; margin:0; font-size: 28px;'>💪 Sarcopenia Drug Discovery Platform</h1>
+    <h1 style='color: #e94560; margin:0; font-size: 28px;'>Sarcopenia Drug Discovery Platform</h1>
     <p style='color: #a8a8a8; margin: 5px 0 0 0; font-size: 14px;'>
         근감소증 신약개발 문헌 데이터베이스 &nbsp;|&nbsp;
         {total}건 논문 분석 완료 &nbsp;|&nbsp; Novel Target & Biomarker Discovery
@@ -225,7 +225,7 @@ st.markdown("""
 # 사이드바: 글로벌 필터
 # ============================================================
 with st.sidebar:
-    st.markdown("### 🔍 필터")
+    st.markdown("### Filter")
 
     study_types = sorted(df_ok["연구유형"].dropna().unique().tolist()) if "연구유형" in df_ok.columns else []
     selected_studies = st.multiselect("연구 유형", study_types, default=study_types)
@@ -270,17 +270,17 @@ with st.sidebar:
 # 탭 구성
 # ============================================================
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
-    "📊 대시보드",
-    "📋 문헌 검색",
-    "🎯 타겟 분석",
-    "💊 화합물 분석",
-    "🔗 Target-Compound 매트릭스",
-    "🤖 AI 질의응답",
-    "🔬 Dark Targets",
-    "💡 AI 신약 후보",
-    "🧬 바이오마커",
-    "📈 연구 동향",
-    "🏢 Control Center",
+    "Dashboard",
+    "Literature Search",
+    "Target Analysis",
+    "Compound Analysis",
+    "Target-Compound Matrix",
+    "AI Q&A",
+    "Dark Targets",
+    "AI Drug Candidates",
+    "Biomarkers",
+    "Research Trends",
+    "Control Center",
 ])
 
 # ============================================================
@@ -356,8 +356,8 @@ with tab1:
 # 탭 2: 문헌 검색
 # ============================================================
 with tab2:
-    st.markdown("### 📋 문헌 검색 및 상세 조회")
-    search_q = st.text_input("🔍 검색어 입력", placeholder="타겟, 화합물, 기전, 키워드 등...")
+    st.markdown("### Literature Search")
+    search_q = st.text_input("검색어 입력", placeholder="타겟, 화합물, 기전, 키워드 등...")
     display = filtered.copy()
     if search_q:
         mask = display.apply(lambda r: search_q.lower() in str(r.values).lower(), axis=1)
@@ -371,7 +371,7 @@ with tab2:
                  column_config={"관련도": st.column_config.ProgressColumn("관련도", min_value=0, max_value=5, format="%d")})
 
     st.markdown("---")
-    st.markdown("#### 📄 논문 상세 보기")
+    st.markdown("#### Paper Detail")
     if len(display) > 0:
         paper_names = display["파일명"].tolist()
         selected_paper = st.selectbox("논문 선택", paper_names)
@@ -382,7 +382,7 @@ with tab2:
                 for field in ["문서유형", "연구유형", "타겟(Target)", "화합물(Compound)", "치료분류", "질환아형"]:
                     if field in row.index:
                         st.markdown(f"**{field}:** {row.get(field, '')}")
-                st.markdown(f"**관련도:** {'⭐' * int(row.get('관련도', 0))}")
+                st.markdown(f"**관련도:** {int(row.get('관련도', 0))}/5")
             with col_b:
                 for field in ["기전(MoA)", "신호전달경로", "세포/모델", "바이오마커"]:
                     if field in row.index:
@@ -392,18 +392,18 @@ with tab2:
 
             txt_file = os.path.join(TXT_FOLDER, selected_paper)
             if os.path.exists(txt_file):
-                with st.expander("📖 원문 텍스트 보기"):
+                with st.expander("View Original Text"):
                     with open(txt_file, "r", encoding="utf-8") as f:
                         st.text(f.read()[:5000] + "\n... (이하 생략)")
 
     col_dl1, col_dl2 = st.columns(2)
     with col_dl1:
         csv_data = display[show_cols].to_csv(index=False, encoding="utf-8-sig")
-        st.download_button("📥 CSV 다운로드", csv_data.encode("utf-8-sig"), "Sarcopenia_검색결과.csv", "text/csv")
+        st.download_button("CSV Download", csv_data.encode("utf-8-sig"), "Sarcopenia_검색결과.csv", "text/csv")
     with col_dl2:
         buf = io.BytesIO()
         display[show_cols].to_excel(buf, index=False, engine="openpyxl")
-        st.download_button("📥 Excel 다운로드", buf.getvalue(), "Sarcopenia_검색결과.xlsx",
+        st.download_button("Excel Download", buf.getvalue(), "Sarcopenia_검색결과.xlsx",
                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 # ============================================================
@@ -411,7 +411,7 @@ with tab2:
 # ============================================================
 with tab3:
     import plotly.express as px
-    st.markdown("### 🎯 타겟 심층 분석")
+    st.markdown("### Target Analysis")
     target_counts = {t: len(idxs) for t, idxs in target_index.items() if len(t) > 1}
     sorted_targets = sorted(target_counts.keys(), key=lambda x: target_counts[x], reverse=True)
     top100 = sorted_targets[:100]
@@ -453,19 +453,19 @@ with tab3:
             finding = row.get("핵심발견", "")
             if finding and str(finding) != "nan":
                 rel = int(row.get("관련도", 0))
-                st.markdown(f"{'⭐'*rel} **{row['파일명'][:60]}...**")
+                st.markdown(f"[{rel}/5] **{row['파일명'][:60]}...**")
                 st.caption(finding)
 
         # 프로파일 다운로드
         profile_text = f"""# {selected_target} - Target Profile Report\n생성일: {datetime.now().strftime('%Y-%m-%d')}\n\n## 기본 정보\n- 관련 논문: {len(t_papers)}건\n- 평균 관련도: {avg_rel:.1f}/5.0\n"""
-        st.download_button("📥 타겟 프로파일 (.md)", profile_text, f"{selected_target}_profile.md", "text/markdown")
+        st.download_button("Target Profile (.md)", profile_text, f"{selected_target}_profile.md", "text/markdown")
 
 # ============================================================
 # 탭 4: 화합물 분석
 # ============================================================
 with tab4:
     import plotly.express as px
-    st.markdown("### 💊 화합물 심층 분석")
+    st.markdown("### Compound Analysis")
     comp_counts = {c: len(idxs) for c, idxs in compound_index.items() if len(c) > 1}
     sorted_compounds = sorted(comp_counts.keys(), key=lambda x: comp_counts[x], reverse=True)
     top100c = sorted_compounds[:100]
@@ -477,7 +477,7 @@ with tab4:
 
         struct = structures.get(selected_compound, {})
         if struct:
-            st.markdown("#### 🧪 화합물 구조 정보")
+            st.markdown("#### Compound Structure")
             img_col, info_col = st.columns([1, 2])
             with img_col:
                 img_url = struct.get("image_url", "")
@@ -499,7 +499,7 @@ with tab4:
                     active_list = actives
                     break
         if active_list and not struct:
-            st.markdown("#### 🌿 천연물 활성 성분")
+            st.markdown("#### Natural Product Active Ingredients")
             for act_name in active_list:
                 act_info = np_actives_db.get(act_name, {})
                 if act_info.get("status") == "found":
@@ -534,7 +534,7 @@ with tab4:
 # ============================================================
 with tab5:
     import plotly.graph_objects as go
-    st.markdown("### 🔗 Target-Compound 관계 매트릭스")
+    st.markdown("### Target-Compound Relationship Matrix")
     n_targets = st.slider("상위 타겟 수", 5, 20, 10)
     n_compounds = st.slider("상위 화합물 수", 5, 20, 10)
 
@@ -566,11 +566,11 @@ with tab5:
 
     buf = io.BytesIO()
     matrix.to_excel(buf, engine="openpyxl")
-    st.download_button("📥 매트릭스 Excel", buf.getvalue(), "Target_Compound_Matrix.xlsx")
+    st.download_button("Matrix Excel", buf.getvalue(), "Target_Compound_Matrix.xlsx")
 
     # Novel Target 후보
     st.markdown("---")
-    st.markdown("#### 🔬 Novel Target 후보 (저빈도 + 고관련도)")
+    st.markdown("#### Novel Target Candidates (Low frequency + High relevance)")
     novel_candidates = []
     for t, idxs in target_index.items():
         if len(t) <= 2:
@@ -591,7 +591,7 @@ with tab5:
 # 탭 6: AI 질의응답 (RAG)
 # ============================================================
 with tab6:
-    st.markdown("### 🤖 AI 질의응답")
+    st.markdown("### AI Q&A")
     st.caption("근감소증 논문 데이터베이스 기반 AI 답변")
 
     example_qs = [
@@ -658,7 +658,7 @@ Answer the question based on this data. Answer in Korean. Cite source paper file
 # 탭 7: Dark Targets
 # ============================================================
 with tab7:
-    st.markdown("### 🔬 Dark Targets — 미개척 타겟 발굴")
+    st.markdown("### Dark Targets")
 
     _intel_report = None
     for d in _search_dirs + [os.path.join(d, 'output') for d in _search_dirs]:
@@ -677,7 +677,7 @@ with tab7:
 
         dark_targets = _intel_report.get('top_dark_targets', [])
         if dark_targets:
-            st.markdown("#### 🏆 Dark Target 랭킹 (Novelty Index)")
+            st.markdown("#### Dark Target Ranking (Novelty Index)")
             dt_rows = [{"순위": i, "타겟": dt.get('target', ''),
                        "Novelty Index": round(dt.get('novelty_index', 0), 4),
                        "논문 수": dt.get('paper_count', 0),
@@ -686,7 +686,7 @@ with tab7:
             st.dataframe(pd.DataFrame(dt_rows), use_container_width=True, hide_index=True)
 
             for dt in dark_targets[:20]:
-                with st.expander(f"🎯 {dt.get('target', '')} (NI={dt.get('novelty_index', 0):.4f})"):
+                with st.expander(f"{dt.get('target', '')} (NI={dt.get('novelty_index', 0):.4f})"):
                     st.markdown(f"**논문 수:** {dt.get('paper_count', 0)}건 | **관련도:** {dt.get('avg_relevance', 0):.1f}/5")
                     if dt.get('pathways'):
                         st.markdown(f"**경로:** {', '.join(dt['pathways'][:10])}")
@@ -695,25 +695,25 @@ with tab7:
 
         gaps = _intel_report.get('top_gaps', [])
         if gaps:
-            st.markdown("#### 🕳️ Gap Analysis")
+            st.markdown("#### Gap Analysis")
             gap_rows = [{"타겟": g.get('target', ''), "화합물": g.get('compound', ''),
                         "Gap Score": round(g.get('gap_score', 0), 3)} for g in gaps[:100]]
             st.dataframe(pd.DataFrame(gap_rows), use_container_width=True, hide_index=True)
 
         synergies = _intel_report.get('top_synergies', [])
         if synergies:
-            st.markdown("#### 🔄 Multi-target Synergy")
+            st.markdown("#### Multi-target Synergy")
             syn_rows = [{"타겟 1": s.get('target1', ''), "타겟 2": s.get('target2', ''),
                         "시너지 점수": round(s.get('synergy_score', 0), 3)} for s in synergies[:100]]
             st.dataframe(pd.DataFrame(syn_rows), use_container_width=True, hide_index=True)
     else:
-        st.info("🔬 패턴 분석 미실행. `python scripts/10_pattern_analysis.py` 실행 필요")
+        st.info("Pattern analysis not yet run. Execute: python scripts/10_pattern_analysis.py")
 
 # ============================================================
 # 탭 8: AI 신약 후보
 # ============================================================
 with tab8:
-    st.markdown("### 💡 AI 신약 후보물질")
+    st.markdown("### AI Drug Candidates")
 
     _candidates_data = None
     for d in _search_dirs + [os.path.join(d, 'output') for d in _search_dirs]:
@@ -735,23 +735,24 @@ with tab8:
             for c in candidates:
                 by_target[c.get('target', 'Unknown')].append(c)
             for target, cands in by_target.items():
-                st.markdown(f"#### 🎯 {target}")
+                st.markdown(f"#### {target}")
                 for i, c in enumerate(cands, 1):
                     valid = c.get('validation_status', '') == 'Valid'
-                    with st.expander(f"{'✅' if valid else '⚠️'} 후보 #{i}: {c.get('smiles', 'N/A')[:50]}"):
+                    label = '[Valid]' if valid else '[Check]'
+                    with st.expander(f"{label} Candidate #{i}: {c.get('smiles', 'N/A')[:50]}"):
                         st.code(c.get('smiles', ''), language=None)
                         st.markdown(f"**근거:** {c.get('rationale', 'N/A')}")
                         st.markdown(f"**Novelty Score:** {c.get('novelty_score', 'N/A')}")
                         if c.get('mechanism'):
                             st.markdown(f"**기전:** {c.get('mechanism')}")
     else:
-        st.info("💡 신약 후보 미생성. `python scripts/11_drug_candidates.py` 실행 필요")
+        st.info("Drug candidates not yet generated. Execute: python scripts/11_drug_candidates.py")
 
 # ============================================================
 # 탭 9: 바이오마커
 # ============================================================
 with tab9:
-    st.markdown("### 🧬 바이오마커 분석")
+    st.markdown("### Biomarker Analysis")
 
     _biomarker_data = None
     for d in _search_dirs + [os.path.join(d, 'output') for d in _search_dirs]:
@@ -781,14 +782,14 @@ with tab9:
         # 카테고리별
         categories = _biomarker_data.get('categories', {})
         if categories:
-            st.markdown("#### 📋 카테고리별 바이오마커")
+            st.markdown("#### Biomarkers by Category")
             for cat, items in categories.items():
                 with st.expander(f"**{cat}** ({len(items)}종)"):
                     for item in items[:100]:
                         st.markdown(f"- **{item['name']}** ({item['count']}건)")
 
         # 진단/예후/치료반응
-        st.markdown("#### 🏥 바이오마커 용도 분류")
+        st.markdown("#### Biomarker Usage Classification")
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown("**진단 마커**")
@@ -803,13 +804,13 @@ with tab9:
             for m in _biomarker_data.get('therapeutic_markers', []):
                 st.write(f"- {m}")
     else:
-        st.info("🧬 바이오마커 분석 미실행. `python scripts/12_biomarker_analysis.py` 실행 필요")
+        st.info("Biomarker analysis not yet run. Execute: python scripts/12_biomarker_analysis.py")
 
 # ============================================================
 # 탭 10: 연구 동향
 # ============================================================
 with tab10:
-    st.markdown("### 📈 근감소증 연구 동향")
+    st.markdown("### Research Trends")
 
     _trend_log = []
     for d in _search_dirs:
@@ -828,9 +829,9 @@ with tab10:
         patents = sum(1 for x in _trend_log if 'patent_number' in x)
         biorxiv = sum(1 for x in _trend_log if x.get('source') in ('biorxiv', 'medrxiv'))
         c1, c2, c3 = st.columns(3)
-        c1.metric("📄 논문", papers)
-        c2.metric("📜 특허", patents)
-        c3.metric("🔬 Preprint", biorxiv)
+        c1.metric("Papers", papers)
+        c2.metric("Patents", patents)
+        c3.metric("Preprints", biorxiv)
 
         import plotly.express as px
         # 핫 키워드
@@ -852,14 +853,14 @@ with tab10:
                 fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
                 st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("📈 수집 로그 없음. 기본 문헌 통계를 표시합니다.")
+        st.info("No collection log found. Showing basic statistics.")
         st.metric("총 문헌 수", len(df_ok))
 
 # ============================================================
 # 탭 11: Control Center
 # ============================================================
 with tab11:
-    st.markdown("### 🏢 Sarcopenia Research Control Center")
+    st.markdown("### Sarcopenia Research Control Center")
 
     pipeline_status = {}
     for d in _search_dirs:
@@ -870,13 +871,13 @@ with tab11:
             break
 
     agents = [
-        {"id": "paper_searcher", "name": "Paper Scout", "icon": "🔍", "role": "PubMed/bioRxiv 논문 검색"},
-        {"id": "patent_searcher", "name": "Patent Hunter", "icon": "📜", "role": "USPTO/KIPRIS 특허 검색"},
-        {"id": "text_extractor", "name": "Text Miner", "icon": "📄", "role": "PDF 텍스트 추출"},
-        {"id": "claude_analyzer", "name": "AI Analyst", "icon": "🤖", "role": "Claude AI 정보 분석"},
-        {"id": "compound_fetcher", "name": "Chem Detective", "icon": "💊", "role": "PubChem 구조 수집"},
-        {"id": "biomarker_analyst", "name": "Biomarker Scout", "icon": "🧬", "role": "바이오마커 분석"},
-        {"id": "deploy_manager", "name": "Deploy Bot", "icon": "🚀", "role": "Streamlit 배포 관리"},
+        {"id": "paper_searcher", "name": "Paper Scout", "icon": "[S]", "role": "PubMed/bioRxiv 논문 검색"},
+        {"id": "patent_searcher", "name": "Patent Hunter", "icon": "[P]", "role": "USPTO/KIPRIS 특허 검색"},
+        {"id": "text_extractor", "name": "Text Miner", "icon": "[T]", "role": "PDF 텍스트 추출"},
+        {"id": "claude_analyzer", "name": "AI Analyst", "icon": "[A]", "role": "Claude AI 정보 분석"},
+        {"id": "compound_fetcher", "name": "Chem Detective", "icon": "[C]", "role": "PubChem 구조 수집"},
+        {"id": "biomarker_analyst", "name": "Biomarker Scout", "icon": "[B]", "role": "바이오마커 분석"},
+        {"id": "deploy_manager", "name": "Deploy Bot", "icon": "[D]", "role": "Streamlit 배포 관리"},
     ]
 
     cols = st.columns(len(agents))
@@ -886,7 +887,7 @@ with tab11:
             state = status.get("status", "idle")
         else:
             state = "idle"
-        color = {"working": "🟢", "completed": "✅", "error": "🔴"}.get(state, "⚪")
+        color = {"working": "[ON]", "completed": "[OK]", "error": "[ERR]"}.get(state, "[--]")
         with col:
             st.markdown(f"### {agent['icon']}")
             st.markdown(f"**{agent['name']}**")
@@ -899,7 +900,7 @@ with tab11:
     st.markdown(f"**파이프라인 상태:** {overall} | **마지막 실행:** {last_update}")
 
     st.markdown("---")
-    st.markdown("#### ⚡ 빠른 실행")
+    st.markdown("#### Quick Run")
     st.code("""
 # 전체 파이프라인 실행
 python scripts/08_orchestrator.py --weekly
