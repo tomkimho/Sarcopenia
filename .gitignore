@@ -1,0 +1,19 @@
+# 진행 상황 파일
+scripts/_진행상황.json
+processed_files.json
+
+# 원본 텍스트 (용량 큼)
+txt_추출결과/
+new_papers_txt/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Streamlit secrets (로컬)
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db

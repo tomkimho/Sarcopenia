@@ -1,0 +1,81 @@
+name: Sarcopenia DCP Daily Pipeline
+
+on:
+  schedule:
+    # 매일 06:00 UTC = 15:00 KST
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Pipeline mode'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  APPEND_MODE: "true"
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: 1
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install pandas openpyxl anthropic requests pdfplumber
+
+      - name: Collect New Papers (PubMed)
+        run: python scripts/05_pubmed_collect.py --years 1
+
+      - name: Collect Patents
+        run: python scripts/06_patent_collect.py
+
+      - name: Collect Preprints (bioRxiv)
+        run: python scripts/07_biorxiv_collect.py
+
+      - name: Extract Text from PDFs
+        run: python scripts/01_pdf_extract.py
+
+      - name: Extract Info (Claude AI - APPEND)
+        run: python scripts/02_info_extract.py --append
+
+      - name: Collect Compound Structures
+        run: python scripts/03_compound_structure.py
+
+      - name: Map Natural Product Actives
+        run: python scripts/04_natural_products.py
+
+      - name: Biomarker Analysis
+        run: python scripts/12_biomarker_analysis.py
+
+      # Weekly only: Pattern Analysis + Drug Candidates
+      - name: Pattern Analysis (Dark Targets)
+        if: github.event.inputs.mode == 'weekly' || github.event.schedule != ''
+        run: python scripts/10_pattern_analysis.py
+
+      - name: Drug Candidates (AI)
+        if: github.event.inputs.mode == 'weekly' || github.event.schedule != ''
+        run: python scripts/11_drug_candidates.py
+
+      - name: Commit & Push Results
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Sarcopenia DCP Bot"
+          git add -A
+          git diff --staged --quiet || git commit -m "🔬 Sarcopenia DCP daily update $(date +%Y-%m-%d)"
+          git push
