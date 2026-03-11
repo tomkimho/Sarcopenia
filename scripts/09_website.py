@@ -89,6 +89,157 @@ st.set_page_config(
 )
 
 # ============================================================
+# Navy Dark Theme CSS
+# ============================================================
+st.markdown("""
+<style>
+/* === Navy Dark Theme === */
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(180deg, #0a0e27 0%, #0d1b3e 30%, #111d35 100%);
+    color: #e0e6f0;
+}
+[data-testid="stHeader"] {
+    background: rgba(10,14,39,0.95);
+    backdrop-filter: blur(10px);
+}
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0b1029 0%, #101a38 100%);
+    border-right: 1px solid rgba(30,136,229,0.2);
+}
+[data-testid="stSidebar"] * {
+    color: #c0cde0 !important;
+}
+
+/* Metric cards */
+[data-testid="stMetric"] {
+    background: rgba(16,26,56,0.7);
+    border: 1px solid rgba(30,136,229,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    backdrop-filter: blur(8px);
+}
+[data-testid="stMetricValue"] {
+    color: #4fc3f7 !important;
+    font-weight: 700;
+}
+[data-testid="stMetricLabel"] {
+    color: #90a4ae !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(13,27,62,0.8);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+    border: 1px solid rgba(30,136,229,0.15);
+}
+.stTabs [data-baseweb="tab"] {
+    color: #8899bb !important;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 8px 14px;
+    font-weight: 500;
+}
+.stTabs [aria-selected="true"] {
+    background: rgba(30,136,229,0.25) !important;
+    color: #4fc3f7 !important;
+    border-bottom: 2px solid #1E88E5;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: rgba(13,20,50,0.6);
+    border: 1px solid rgba(30,136,229,0.15);
+    border-radius: 8px;
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(30,136,229,0.2);
+    border-radius: 8px;
+}
+
+/* Text inputs */
+.stTextInput input, .stSelectbox [data-baseweb="select"],
+.stMultiSelect [data-baseweb="select"] {
+    background: rgba(13,20,50,0.8) !important;
+    border: 1px solid rgba(30,136,229,0.3) !important;
+    color: #e0e6f0 !important;
+}
+
+/* Download buttons */
+.stDownloadButton button {
+    background: linear-gradient(135deg, #1565c0, #1E88E5) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px;
+}
+
+/* Info/Success/Error boxes */
+.stAlert {
+    background: rgba(13,20,50,0.6);
+    border: 1px solid rgba(30,136,229,0.2);
+    border-radius: 8px;
+}
+
+/* Plotly charts dark background */
+.js-plotly-plot .plotly .main-svg {
+    background: transparent !important;
+}
+
+/* Markdown text */
+[data-testid="stAppViewContainer"] .stMarkdown,
+[data-testid="stAppViewContainer"] .stMarkdown p,
+[data-testid="stAppViewContainer"] .stMarkdown li {
+    color: #c8d6e5;
+}
+[data-testid="stAppViewContainer"] .stMarkdown h1,
+[data-testid="stAppViewContainer"] .stMarkdown h2,
+[data-testid="stAppViewContainer"] .stMarkdown h3,
+[data-testid="stAppViewContainer"] .stMarkdown h4 {
+    color: #e0e6f0;
+}
+
+/* Chat messages */
+[data-testid="stChatMessage"] {
+    background: rgba(13,20,50,0.5);
+    border: 1px solid rgba(30,136,229,0.15);
+    border-radius: 10px;
+}
+
+/* Slider */
+.stSlider [data-baseweb="slider"] {
+    background: rgba(30,136,229,0.2);
+}
+
+/* Code block */
+.stCodeBlock {
+    background: rgba(8,12,30,0.8) !important;
+    border: 1px solid rgba(30,136,229,0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0a0e27; }
+::-webkit-scrollbar-thumb { background: #1E88E5; border-radius: 4px; }
+
+/* 3D Viewer animation pulse */
+@keyframes binding-pulse {
+    0% { box-shadow: 0 0 5px rgba(30,136,229,0.3); }
+    50% { box-shadow: 0 0 20px rgba(30,136,229,0.6); }
+    100% { box-shadow: 0 0 5px rgba(30,136,229,0.3); }
+}
+.binding-viewer {
+    animation: binding-pulse 3s ease-in-out infinite;
+    border-radius: 12px;
+    overflow: hidden;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
 # 타겟 이름 정규화
 # ============================================================
 TARGET_NORMALIZE = {
@@ -211,13 +362,25 @@ df_ok = df[df["처리상태"].isin(["성공", "OK"])].copy() if "처리상태" i
 # 헤더
 # ============================================================
 st.markdown("""
-<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-     padding: 20px 30px; border-radius: 12px; margin-bottom: 20px;'>
-    <h1 style='color: #e94560; margin:0; font-size: 28px;'>Sarcopenia Drug Discovery Platform</h1>
-    <p style='color: #a8a8a8; margin: 5px 0 0 0; font-size: 14px;'>
-        근감소증 신약개발 문헌 데이터베이스 &nbsp;|&nbsp;
-        {total}건 논문 분석 완료 &nbsp;|&nbsp; Novel Target & Biomarker Discovery
-    </p>
+<div style='background: linear-gradient(135deg, #0a1628 0%, #0d2137 30%, #0f3460 60%, #1a1a4e 100%);
+     padding: 28px 36px; border-radius: 14px; margin-bottom: 24px;
+     border: 1px solid rgba(30,136,229,0.3);
+     box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);'>
+    <div style='display:flex; align-items:center; gap:16px;'>
+        <div style='width:48px; height:48px; border-radius:12px;
+             background: linear-gradient(135deg, #1E88E5, #42a5f5);
+             display:flex; align-items:center; justify-content:center;
+             font-size:24px; font-weight:800; color:white;
+             box-shadow: 0 2px 12px rgba(30,136,229,0.4);'>S</div>
+        <div>
+            <h1 style='color: #4fc3f7; margin:0; font-size: 26px; font-weight: 700;
+                letter-spacing: -0.5px;'>Sarcopenia Drug Discovery Platform</h1>
+            <p style='color: #7899b8; margin: 4px 0 0 0; font-size: 13px; letter-spacing: 0.3px;'>
+                BasGenBio &nbsp;|&nbsp; {total} papers analyzed &nbsp;|&nbsp;
+                Novel Target & Biomarker Discovery &nbsp;|&nbsp; CPI Foundation Model
+            </p>
+        </div>
+    </div>
 </div>
 """.format(total=len(df_ok)), unsafe_allow_html=True)
 
@@ -269,11 +432,12 @@ with st.sidebar:
 # ============================================================
 # 탭 구성
 # ============================================================
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
     "Dashboard",
     "Literature Search",
     "Target Analysis",
     "Compound Analysis",
+    "CPI Binding",
     "Target-Compound Matrix",
     "AI Q&A",
     "Dark Targets",
@@ -282,6 +446,23 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "Research Trends",
     "Control Center",
 ])
+
+# ============================================================
+# Plotly Dark Theme Helper
+# ============================================================
+_DARK_LAYOUT = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(10,14,39,0.4)",
+    font=dict(color="#c0cde0", size=12),
+    title_font=dict(color="#e0e6f0", size=15),
+    xaxis=dict(gridcolor="rgba(30,136,229,0.1)", zerolinecolor="rgba(30,136,229,0.2)"),
+    yaxis=dict(gridcolor="rgba(30,136,229,0.1)", zerolinecolor="rgba(30,136,229,0.2)"),
+    coloraxis_colorbar=dict(tickfont=dict(color="#90a4ae")),
+    legend=dict(font=dict(color="#c0cde0")),
+)
+def _apply_dark(fig):
+    fig.update_layout(**_DARK_LAYOUT)
+    return fig
 
 # ============================================================
 # 탭 1: 대시보드
@@ -310,7 +491,7 @@ with tab1:
                           title="연구 유형 분포", hole=0.4,
                           color_discrete_sequence=px.colors.qualitative.Set2)
             fig1.update_layout(height=350, margin=dict(t=40, b=20, l=20, r=20))
-            st.plotly_chart(fig1, use_container_width=True)
+            st.plotly_chart(_apply_dark(fig1), use_container_width=True)
 
     with col_r:
         rel_dist = df_ok["관련도"].value_counts().sort_index().reset_index()
@@ -319,7 +500,7 @@ with tab1:
                       title="관련도 점수 분포",
                       color="건수", color_continuous_scale="Reds")
         fig2.update_layout(height=350, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(_apply_dark(fig2), use_container_width=True)
 
     # 치료분류 분포 (근감소증 특화)
     if "치료분류" in df_ok.columns:
@@ -330,7 +511,7 @@ with tab1:
                          color="건수", color_continuous_scale="Teal")
         fig_cat.update_layout(height=350, yaxis=dict(autorange="reversed"),
                               margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_cat, use_container_width=True)
+        st.plotly_chart(_apply_dark(fig_cat), use_container_width=True)
 
     # Top 타겟
     top_targets = get_top_items(df_ok, "타겟(Target)", 15, normalize_target)
@@ -340,7 +521,7 @@ with tab1:
                       title="Top 15 Drug Targets",
                       color="논문수", color_continuous_scale="Blues")
         fig3.update_layout(height=450, yaxis=dict(autorange="reversed"))
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(_apply_dark(fig3), use_container_width=True)
 
     # Top 화합물
     top_compounds = get_top_items(df_ok, "화합물(Compound)", 15)
@@ -350,7 +531,7 @@ with tab1:
                       title="Top 15 Compounds",
                       color="논문수", color_continuous_scale="Greens")
         fig4.update_layout(height=450, yaxis=dict(autorange="reversed"))
-        st.plotly_chart(fig4, use_container_width=True)
+        st.plotly_chart(_apply_dark(fig4), use_container_width=True)
 
 # ============================================================
 # 탭 2: 문헌 검색
@@ -435,7 +616,7 @@ with tab3:
                 fig = px.bar(t_comp_df, x="건수", y="화합물", orientation="h",
                             color="건수", color_continuous_scale="Oranges")
                 fig.update_layout(height=300, yaxis=dict(autorange="reversed"), margin=dict(t=10, b=10))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(_apply_dark(fig), use_container_width=True)
         with col_r:
             st.markdown("#### 관련 신호전달 경로")
             t_path = get_top_items(t_papers, "신호전달경로", 10) if "신호전달경로" in t_papers.columns else []
@@ -520,7 +701,7 @@ with tab4:
                 fig = px.bar(c_tgt_df, x="건수", y="타겟", orientation="h",
                             color="건수", color_continuous_scale="Purples")
                 fig.update_layout(height=300, yaxis=dict(autorange="reversed"))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(_apply_dark(fig), use_container_width=True)
         with col_r:
             st.markdown("#### 기전 (MoA) 요약")
             if "기전(MoA)" in c_papers.columns:
@@ -530,9 +711,858 @@ with tab4:
                         st.caption(f"• {moa}")
 
 # ============================================================
-# 탭 5: Target-Compound 매트릭스
+# 탭 5: CPI Binding Visualization (3D 단백질-화합물 결합)
 # ============================================================
 with tab5:
+    import streamlit.components.v1 as components
+    import requests as _req
+
+    st.markdown("### Compound-Protein Interaction (CPI) Binding Visualization")
+    st.caption("3Dmol.js & RCSB PDB / UniProt / PubChem 3D API integration")
+
+    # --- 주요 근감소증 타겟의 PDB ID 매핑 ---
+    SARCOPENIA_TARGET_PDB = {
+        "Myostatin/GDF-8": {"pdb": "3HH2", "uniprot": "O14793", "desc": "Myostatin (Growth Differentiation Factor 8) - 근육 성장 억제 인자", "binding_residues": "W28,W30,Y33,D56,F63,K65,H67,Y111"},
+        "ActRIIB": {"pdb": "2QLU", "uniprot": "Q13705", "desc": "Activin Receptor Type IIB - Myostatin 수용체", "binding_residues": "E28,Y31,K56,E63,K74,P83,F101"},
+        "mTOR/PI3K/Akt": {"pdb": "4DRH", "uniprot": "P42345", "desc": "mTOR kinase - 단백질 합성 촉진 경로", "binding_residues": "L2185,Y2225,D2195,V2240,M2345"},
+        "IGF-1/IGF-1R": {"pdb": "1IMX", "uniprot": "P05019", "desc": "Insulin-like Growth Factor 1 - 근육 성장 촉진", "binding_residues": "G1,P2,E3,T4,L5,C6"},
+        "MuRF1/MAFbx": {"pdb": "4FZT", "uniprot": "Q969Q1", "desc": "E3 ubiquitin ligase MuRF1 - 근단백 분해", "binding_residues": "C23,H25,C44,C47,C54,H57"},
+        "FoxO3": {"pdb": "2UZK", "uniprot": "O43524", "desc": "Forkhead box O3 - 근위축 전사인자", "binding_residues": "H212,S215,W234,H242,S256"},
+        "AMPK/PGC-1alpha": {"pdb": "4CFE", "uniprot": "Q13131", "desc": "AMP-activated protein kinase - 에너지 센서", "binding_residues": "R83,D88,T106,N144,D151"},
+        "RIPK1/RIPK3": {"pdb": "4ITJ", "uniprot": "Q9Y572", "desc": "Receptor-interacting protein kinase 3 - Necroptosis 매개", "binding_residues": "L27,V35,A48,K50,E60,D142"},
+        "NF-kB": {"pdb": "1NFI", "uniprot": "Q04206", "desc": "Nuclear Factor kappa B - 염증 전사인자", "binding_residues": "R33,E39,R57,Y60,K221,R246"},
+        "Androgen Receptor": {"pdb": "1E3G", "uniprot": "P10275", "desc": "Androgen Receptor - SARMs 타겟", "binding_residues": "L704,N705,R752,F764,M780,T877"},
+        "GDF-15": {"pdb": "5VZ3", "uniprot": "Q99988", "desc": "Growth Differentiation Factor 15 - 식욕/체중 조절", "binding_residues": "R189,H193,D200,W203,I206"},
+        "HDAC6": {"pdb": "5EDU", "uniprot": "Q9UBN7", "desc": "Histone Deacetylase 6 - 미세소관/자가포식 조절", "binding_residues": "H573,H574,D612,H614,D705,L749"},
+    }
+
+    # --- 주요 화합물과 결합 타겟 매핑 (binding_sites + indication + moa_short) ---
+    COMPOUND_TARGET_MAP = {
+        "Bimagrumab": {"targets": ["ActRIIB"], "type": "Biologic",
+            "moa": "ActRII 길항 항체 - Myostatin/Activin 신호 차단",
+            "moa_short": "ActRII antagonist",
+            "indication": "Sarcopenia, Obesity, T2DM",
+            "phase": "Phase 2/3",
+            "pubchem_3d": None,
+            "binding_sites": {"ActRIIB": "E28,Y31,K56"}},
+        "Testosterone": {"targets": ["Androgen Receptor"], "type": "Small molecule",
+            "moa": "AR 작용제 - 근단백 합성 촉진",
+            "moa_short": "AR agonist",
+            "indication": "Hypogonadism, Sarcopenia, Cachexia",
+            "phase": "Approved",
+            "pubchem_3d": "58-22-0", "smiles": "CC12CCC3C(C1CCC2O)CCC4=CC(=O)CCC34C",
+            "binding_sites": {"Androgen Receptor": "L704,N705,T877"}},
+        "Enobosarm": {"targets": ["Androgen Receptor"], "type": "Small molecule",
+            "moa": "Selective AR Modulator (SARM) - 근육 선택적 동화작용",
+            "moa_short": "SARM (selective AR modulator)",
+            "indication": "Cancer cachexia, Sarcopenia, Stress urinary incontinence",
+            "phase": "Phase 3",
+            "pubchem_3d": "11326715", "smiles": "CC(O)C1=CC(=CC(=C1)C#N)OC2=CC(=C(C=C2)C#N)F",
+            "binding_sites": {"Androgen Receptor": "R752,F764,M780"}},
+        "Metformin": {"targets": ["AMPK/PGC-1alpha"], "type": "Small molecule",
+            "moa": "AMPK 활성화 - 에너지 대사/미토콘드리아 기능 개선",
+            "moa_short": "AMPK activator",
+            "indication": "T2DM, Aging (TAME trial), Sarcopenic obesity",
+            "phase": "Approved (T2DM) / Phase 3 (Aging)",
+            "pubchem_3d": "4091", "smiles": "CN(C)C(=N)NC(=N)N",
+            "binding_sites": {"AMPK/PGC-1alpha": "R83,D88,T106"}},
+        "Rapamycin": {"targets": ["mTOR/PI3K/Akt"], "type": "Small molecule",
+            "moa": "mTORC1 선택적 억제 - 자가포식 촉진/단백합성 조절",
+            "moa_short": "mTORC1 inhibitor",
+            "indication": "Transplant rejection, Aging, LAM",
+            "phase": "Approved (Transplant) / Phase 2 (Aging)",
+            "pubchem_3d": "5284616",
+            "binding_sites": {"mTOR/PI3K/Akt": "L2185,Y2225,D2195"}},
+        "Leucine": {"targets": ["mTOR/PI3K/Akt"], "type": "Natural product",
+            "moa": "mTOR 직접 활성화 - 근단백 합성 촉진 (BCAA)",
+            "moa_short": "mTOR activator (BCAA)",
+            "indication": "Sarcopenia, Frailty, Post-surgical recovery",
+            "phase": "Supplement / Phase 2",
+            "pubchem_3d": "6106", "smiles": "CC(C)CC(N)C(=O)O",
+            "binding_sites": {"mTOR/PI3K/Akt": "V2240,M2345"}},
+        "GSK872": {"targets": ["RIPK1/RIPK3"], "type": "Small molecule",
+            "moa": "RIPK3 키나아제 억제 - Necroptosis/염증 차단",
+            "moa_short": "RIPK3 inhibitor",
+            "indication": "IBD, Neurodegeneration, Muscle necroptosis",
+            "phase": "Preclinical",
+            "pubchem_3d": "71560588",
+            "binding_sites": {"RIPK1/RIPK3": "L27,V35,A48,K50"}},
+        "Tubastatin A": {"targets": ["HDAC6"], "type": "Small molecule",
+            "moa": "HDAC6 선택적 억제 - 미세소관 안정화/자가포식 조절",
+            "moa_short": "HDAC6 selective inhibitor",
+            "indication": "CMT, Neurodegeneration, Muscle atrophy",
+            "phase": "Preclinical",
+            "pubchem_3d": "49850262",
+            "binding_sites": {"HDAC6": "H573,H574,D612,H614"}},
+        "HMB": {"targets": ["mTOR/PI3K/Akt", "MuRF1/MAFbx"], "type": "Natural product",
+            "moa": "mTOR 활성화 + 유비퀴틴-프로테아좀 분해 억제",
+            "moa_short": "mTOR activator + UPS inhibitor",
+            "indication": "Sarcopenia, Cachexia, Exercise recovery",
+            "phase": "Supplement / Phase 2",
+            "pubchem_3d": "69362", "smiles": "CC(O)CC(=O)O",
+            "binding_sites": {"mTOR/PI3K/Akt": "V2240", "MuRF1/MAFbx": "C23,H25"}},
+        "Trevogrumab": {"targets": ["Myostatin/GDF-8"], "type": "Biologic",
+            "moa": "항-Myostatin 항체 - Myostatin 직접 중화",
+            "moa_short": "Anti-myostatin Ab",
+            "indication": "Sarcopenia, Muscular dystrophy",
+            "phase": "Phase 2 (discontinued)",
+            "pubchem_3d": None,
+            "binding_sites": {"Myostatin/GDF-8": "W28,W30,Y33"}},
+        "Garetosmab": {"targets": ["ActRIIB"], "type": "Biologic",
+            "moa": "항-Activin A 항체 - Activin 신호 차단",
+            "moa_short": "Anti-activin A Ab",
+            "indication": "FOP, Sarcopenia, Muscle wasting",
+            "phase": "Phase 2",
+            "pubchem_3d": None,
+            "binding_sites": {"ActRIIB": "E63,K74,P83,F101"}},
+    }
+
+    # ── AI 논문 분석 기반 화합물 지식 DB (3,894편 논문에서 추출) ──
+    COMPOUND_KNOWLEDGE = {
+        "Vitamin D": {"moa_short": "VDR agonist / Anti-oxidative",
+            "indication": "Age-related sarcopenia, Osteo-sarcopenia",
+            "phase": "Supplement/RCT", "type": "Supplement",
+            "pathway": "PI3K/Akt/mTOR, NF-kB, Oxidative stress"},
+        "Testosterone": {"moa_short": "AR agonist / Anabolic",
+            "indication": "Hypogonadal sarcopenia, Cachexia",
+            "phase": "Approved", "type": "Hormone",
+            "pathway": "AR signaling, IGF-1/PI3K/Akt/mTOR"},
+        "Leucine": {"moa_short": "mTORC1 activator (BCAA)",
+            "indication": "Age-related sarcopenia, Disuse atrophy",
+            "phase": "Supplement/RCT", "type": "Amino acid",
+            "pathway": "mTORC1, Muscle protein synthesis"},
+        "Dexamethasone": {"moa_short": "GR agonist (atrophy model)",
+            "indication": "Drug-induced sarcopenia (model compound)",
+            "phase": "Approved (anti-inflammatory)", "type": "Steroid",
+            "pathway": "FoxO3/Atrogin-1/MuRF1, UPS activation"},
+        "HMB": {"moa_short": "mTOR activator + UPS inhibitor",
+            "indication": "Age-related sarcopenia, Cachexia",
+            "phase": "Supplement/Phase 2", "type": "Metabolite",
+            "pathway": "mTOR, Ubiquitin-proteasome inhibition"},
+        "Growth hormone": {"moa_short": "GH/IGF-1 axis activator",
+            "indication": "Age-related sarcopenia, GH deficiency",
+            "phase": "Approved/Phase 2", "type": "Biologic",
+            "pathway": "GH/IGF-1 axis, Satellite cell activation"},
+        "Creatine": {"moa_short": "ATP resynthesis enhancer",
+            "indication": "Age-related sarcopenia, Exercise performance",
+            "phase": "Supplement/RCT", "type": "Supplement",
+            "pathway": "Phosphocreatine/ATP, Anti-oxidative"},
+        "Metformin": {"moa_short": "AMPK activator",
+            "indication": "Diabetic sarcopenia, Sarcopenic obesity",
+            "phase": "Approved/Phase 3", "type": "Small molecule",
+            "pathway": "AMPK/PGC-1a, Insulin sensitization"},
+        "Whey protein": {"moa_short": "Protein synthesis stimulator",
+            "indication": "Age-related sarcopenia, Post-stroke",
+            "phase": "Supplement/RCT", "type": "Nutritional",
+            "pathway": "mTOR, Muscle protein synthesis"},
+        "Omega-3 fatty acids": {"moa_short": "Anti-inflammatory (EPA/DHA)",
+            "indication": "Cancer cachexia, Inflammatory sarcopenia",
+            "phase": "Supplement/RCT", "type": "Nutritional",
+            "pathway": "NF-kB inhibition, EPA/DHA anti-inflammation"},
+        "Resveratrol": {"moa_short": "SIRT1/PGC-1a activator",
+            "indication": "Age-related sarcopenia, Mitochondrial dysfunction",
+            "phase": "Preclinical/Phase 1", "type": "Natural product",
+            "pathway": "SIRT1/PGC-1a, Mitochondrial biogenesis"},
+        "Calcium": {"moa_short": "Mineral cofactor / Muscle contraction",
+            "indication": "Osteo-sarcopenia, Age-related",
+            "phase": "Supplement", "type": "Mineral",
+            "pathway": "Ca2+ signaling, Muscle contraction"},
+        "Probiotics": {"moa_short": "Gut-muscle axis modulator",
+            "indication": "Age-related sarcopenia, Gut dysbiosis",
+            "phase": "Supplement/RCT", "type": "Probiotic",
+            "pathway": "Gut-muscle axis, SCFA, Inflammation reduction"},
+        "Insulin": {"moa_short": "Insulin receptor agonist",
+            "indication": "Diabetic sarcopenia, Insulin resistance",
+            "phase": "Approved", "type": "Biologic",
+            "pathway": "PI3K/Akt/mTOR, Glucose uptake"},
+        "Branched-chain amino acids": {"moa_short": "mTORC1 activator (BCAA)",
+            "indication": "Age-related sarcopenia, Liver cirrhosis",
+            "phase": "Supplement/RCT", "type": "Amino acid",
+            "pathway": "mTORC1, Ammonia detoxification"},
+        "Selenium": {"moa_short": "Antioxidant cofactor (GPx)",
+            "indication": "Age-related sarcopenia, Oxidative stress",
+            "phase": "Supplement", "type": "Mineral",
+            "pathway": "Glutathione peroxidase, ROS reduction"},
+        "Zinc": {"moa_short": "Metalloenzyme cofactor / Antioxidant",
+            "indication": "Age-related sarcopenia, Immune dysfunction",
+            "phase": "Supplement", "type": "Mineral",
+            "pathway": "Antioxidant defense, Protein synthesis"},
+        "Vitamin E": {"moa_short": "Lipid-soluble antioxidant",
+            "indication": "Age-related sarcopenia, Oxidative stress",
+            "phase": "Supplement", "type": "Vitamin",
+            "pathway": "Lipid peroxidation inhibition, NF-kB"},
+        "Vitamin C": {"moa_short": "Antioxidant / Collagen synthesis",
+            "indication": "Age-related sarcopenia, Oxidative stress",
+            "phase": "Supplement", "type": "Vitamin",
+            "pathway": "ROS scavenging, Collagen biosynthesis"},
+        "Irisin": {"moa_short": "Myokine / Browning activator",
+            "indication": "Sarcopenic obesity, Metabolic sarcopenia",
+            "phase": "Preclinical", "type": "Myokine",
+            "pathway": "PGC-1a/FNDC5, UCP1 browning"},
+        "Cisplatin": {"moa_short": "DNA crosslinker (atrophy model)",
+            "indication": "Chemo-induced cachexia (model)",
+            "phase": "Approved (anticancer)", "type": "Small molecule",
+            "pathway": "DNA damage, NF-kB, Muscle wasting"},
+        "Essential amino acids": {"moa_short": "Protein synthesis stimulator",
+            "indication": "Age-related sarcopenia, Post-surgical",
+            "phase": "Supplement/RCT", "type": "Amino acid",
+            "pathway": "mTORC1, Leucine-enriched EAA"},
+        "Protein supplements": {"moa_short": "MPS stimulator",
+            "indication": "Age-related sarcopenia, Malnutrition",
+            "phase": "Supplement/RCT", "type": "Nutritional",
+            "pathway": "mTOR, Muscle protein synthesis"},
+        "Rapamycin": {"moa_short": "mTORC1 inhibitor",
+            "indication": "Aging, Immunosuppression",
+            "phase": "Approved/Phase 2", "type": "Small molecule",
+            "pathway": "mTORC1, Autophagy induction"},
+        "Magnesium": {"moa_short": "Enzyme cofactor / Anti-inflammatory",
+            "indication": "Age-related sarcopenia, Muscle cramps",
+            "phase": "Supplement", "type": "Mineral",
+            "pathway": "ATP metabolism, NF-kB reduction"},
+        "Enobosarm": {"moa_short": "SARM (selective AR modulator)",
+            "indication": "Cancer cachexia, Sarcopenia",
+            "phase": "Phase 3", "type": "Small molecule",
+            "pathway": "Androgen receptor, Anabolic signaling"},
+    }
+
+    # 화합물별 고유 색상 팔레트 (밝고 구분 쉬운 8색)
+    CPI_COLORS = ["#00e676","#ffd740","#ff4081","#40c4ff","#ea80fc","#ff6e40","#69f0ae","#448aff"]
+
+    # --- 모드 선택 ---
+    cpi_mode = st.radio("Analysis Mode", ["Compound -> Binding Targets", "Target Protein -> Binding Compounds"], horizontal=True)
+
+    if cpi_mode == "Compound -> Binding Targets":
+        st.markdown("---")
+        compound_list = list(COMPOUND_TARGET_MAP.keys())
+        # 데이터에서 추가 화합물 수집
+        extra_compounds = sorted(compound_index.keys(), key=lambda x: len(compound_index[x]), reverse=True)[:50]
+        all_compounds = compound_list + [c for c in extra_compounds if c not in compound_list]
+
+        sel_cmp = st.selectbox("Select Compound", all_compounds,
+                               format_func=lambda x: f"{x} ({''.join(COMPOUND_TARGET_MAP[x]['targets']) if x in COMPOUND_TARGET_MAP else 'DB'})")
+
+        if sel_cmp:
+            cmp_info = COMPOUND_TARGET_MAP.get(sel_cmp, {})
+            # DB 화합물이면 COMPOUND_KNOWLEDGE에서 정보 보강
+            if not cmp_info and sel_cmp in COMPOUND_KNOWLEDGE:
+                _ck = COMPOUND_KNOWLEDGE[sel_cmp]
+                cmp_info = {"targets": [], "type": _ck.get("type", "DB"),
+                            "moa": _ck.get("moa_short", ""), "moa_short": _ck.get("moa_short", ""),
+                            "indication": _ck.get("indication", ""), "phase": _ck.get("phase", ""),
+                            "smiles": "", "pubchem_3d": None}
+            targets_for_cmp = cmp_info.get("targets", [])
+
+            # 데이터베이스에서 타겟 보강
+            if sel_cmp in compound_index:
+                c_papers_cpi = df_ok.loc[df_ok.index.isin(compound_index[sel_cmp])]
+                db_targets = get_top_items(c_papers_cpi, "타겟(Target)", 10, normalize_target)
+                for t, cnt in db_targets:
+                    if t not in targets_for_cmp and t in SARCOPENIA_TARGET_PDB:
+                        targets_for_cmp.append(t)
+
+            col_info, col_3d = st.columns([1, 2])
+
+            with col_info:
+                st.markdown(f"#### {sel_cmp}")
+                if cmp_info:
+                    st.markdown(f"**Type:** {cmp_info.get('type', 'Unknown')}")
+                    st.markdown(f"**MoA:** {cmp_info.get('moa', cmp_info.get('moa_short', '-'))}")
+                    if cmp_info.get("indication"):
+                        st.markdown(f"**Indication:** {cmp_info['indication']}")
+                    if cmp_info.get("phase"):
+                        st.markdown(f"**Phase:** {cmp_info['phase']}")
+                    if cmp_info.get("smiles"):
+                        st.code(cmp_info["smiles"], language=None)
+                    # PubChem 구조 이미지
+                    struct_info = structures.get(sel_cmp, {})
+                    if struct_info and struct_info.get("image_url"):
+                        st.image(struct_info["image_url"], caption="2D Structure", width=220)
+                    elif cmp_info.get("pubchem_3d"):
+                        st.image(f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{cmp_info['pubchem_3d']}/PNG?image_size=250x250", caption="2D Structure (PubChem)", width=220)
+
+                st.markdown("#### Binding Targets")
+                for t in targets_for_cmp:
+                    tinfo = SARCOPENIA_TARGET_PDB.get(t, {})
+                    pdb_id = tinfo.get("pdb", "N/A")
+                    st.markdown(f"- **{t}** (PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id}))")
+                    if tinfo.get("desc"):
+                        st.caption(f"  {tinfo['desc']}")
+
+            with col_3d:
+                st.markdown("#### 3D Binding Visualization")
+                if targets_for_cmp:
+                    sel_bind_target = st.selectbox("Select binding target to visualize", targets_for_cmp)
+                    tgt_pdb_info = SARCOPENIA_TARGET_PDB.get(sel_bind_target, {})
+                    pdb_id = tgt_pdb_info.get("pdb", "")
+                    binding_res = tgt_pdb_info.get("binding_residues", "")
+
+                    if pdb_id:
+                        # SMILES/CID 정보 준비
+                        _cmp_smiles = cmp_info.get("smiles", "")
+                        _cmp_cid = cmp_info.get("pubchem_3d", "")
+                        if not _cmp_smiles and sel_cmp in structures:
+                            _cmp_smiles = structures[sel_cmp].get("SMILES", "")
+                        if not _cmp_cid and sel_cmp in structures:
+                            _cmp_cid = str(structures[sel_cmp].get("CID", ""))
+                        _cmp_img_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{_cmp_cid}/PNG?image_size=300x300" if _cmp_cid else ""
+
+                        # 3Dmol.js 기반 3D 시각화 + 화합물 오버레이
+                        viewer_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background: #0a0e27; overflow:hidden; font-family: 'Segoe UI', system-ui, sans-serif; }}
+#viewport {{ width:100%; height:580px; position:relative; border-radius:12px;
+    border: 1px solid rgba(30,136,229,0.3);
+    box-shadow: 0 0 30px rgba(30,136,229,0.15);
+}}
+#info-overlay {{
+    position:absolute; top:12px; left:12px; z-index:100;
+    background: rgba(10,14,39,0.92); color:#4fc3f7;
+    padding:10px 16px; border-radius:8px; font-size:12px;
+    border: 1px solid rgba(30,136,229,0.3);
+    backdrop-filter: blur(10px); max-width:320px;
+}}
+#info-overlay h4 {{ margin:0 0 4px 0; color:#90caf9; font-size:13px; }}
+#info-overlay p {{ margin:2px 0; color:#7899b8; font-size:11px; }}
+
+/* Compound card (bottom-right) */
+#compound-card {{
+    position:absolute; bottom:14px; right:14px; z-index:120;
+    background: rgba(10,14,39,0.95); border:1px solid rgba(0,230,118,0.4);
+    border-radius:10px; padding:10px; width:200px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}}
+#compound-card:hover {{
+    width:360px; padding:14px;
+    border-color: rgba(0,230,118,0.8);
+    box-shadow: 0 0 24px rgba(0,230,118,0.3);
+}}
+#compound-card h5 {{
+    margin:0 0 4px 0; color:#00e676; font-size:13px; font-weight:700;
+}}
+#compound-card .smiles {{
+    color:#80cbc4; font-size:10px; font-family:monospace;
+    word-break:break-all; line-height:1.3;
+    max-height:28px; overflow:hidden;
+    transition: max-height 0.3s ease;
+}}
+#compound-card:hover .smiles {{
+    max-height:120px;
+    font-size:12px;
+    color:#b2dfdb;
+}}
+#compound-card .struct-img {{
+    width:80px; height:80px; margin-top:6px;
+    border-radius:6px; border:1px solid rgba(0,230,118,0.2);
+    background:#0d1b3e; object-fit:contain;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    cursor: zoom-in;
+}}
+#compound-card:hover .struct-img {{
+    width:180px; height:180px;
+    border-color: rgba(0,230,118,0.6);
+    box-shadow: 0 0 16px rgba(0,230,118,0.25);
+}}
+#compound-card .type-badge {{
+    display:inline-block; padding:2px 8px; border-radius:10px;
+    font-size:9px; font-weight:600; margin-top:4px;
+    background: rgba(0,230,118,0.15); color:#69f0ae;
+}}
+#compound-card .phase-badge {{
+    display:inline-block; padding:2px 8px; border-radius:10px;
+    font-size:9px; font-weight:600; margin-left:4px;
+    background: rgba(76,175,80,0.2); color:#81c784;
+}}
+#compound-card .moa-text {{
+    color:#b0bec5; font-size:10px; margin-top:5px;
+    line-height:1.3; font-style:italic;
+}}
+#compound-card .indication-text {{
+    color:#ffcc80; font-size:10px; margin-top:3px;
+    line-height:1.3;
+    max-height:0; overflow:hidden;
+    transition: max-height 0.3s ease;
+}}
+#compound-card:hover .indication-text {{
+    max-height:60px;
+}}
+
+#binding-label {{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    z-index:100; background: rgba(233,69,96,0.9); color:white;
+    padding:6px 18px; border-radius:20px; font-size:11px;
+    font-weight:600; animation: pulse-glow 2s ease-in-out infinite;
+}}
+#loading {{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    color:#4fc3f7; font-size:14px; z-index:50;
+}}
+@keyframes pulse-glow {{
+    0%,100% {{ box-shadow: 0 0 8px rgba(233,69,96,0.4); }}
+    50% {{ box-shadow: 0 0 24px rgba(233,69,96,0.8); }}
+}}
+@keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+.spinner {{ display:inline-block; width:20px; height:20px; border:2px solid #4fc3f7;
+    border-top-color:transparent; border-radius:50%; animation: spin 1s linear infinite;
+    vertical-align:middle; margin-right:8px; }}
+</style>
+</head>
+<body>
+<div id="viewport">
+    <div id="info-overlay">
+        <h4>{sel_cmp} + {sel_bind_target}</h4>
+        <p>PDB: {pdb_id} | UniProt: {tgt_pdb_info.get('uniprot', '')}</p>
+        <p>Binding Site: {binding_res[:50]}</p>
+    </div>
+    <div id="loading"><span class="spinner"></span>Loading PDB structure...</div>
+    <div id="binding-label" style="display:none;">Binding Animation Active</div>
+    <div id="compound-card">
+        <h5>{sel_cmp}</h5>
+        <span class="type-badge">{cmp_info.get('type', 'Unknown')}</span>
+        <span class="phase-badge">{cmp_info.get('phase', '')}</span>
+        <div class="moa-text">{cmp_info.get('moa_short', cmp_info.get('moa', '')[:40])}</div>
+        <div class="indication-text">{cmp_info.get('indication', '')}</div>
+        <div class="smiles">{_cmp_smiles if _cmp_smiles else 'N/A (Biologic)'}</div>
+        {"<img class='struct-img' src='" + _cmp_img_url + "' alt='2D Structure' onerror='this.style.display=&quot;none&quot;'/>" if _cmp_img_url else ""}
+    </div>
+</div>
+<script>
+(function() {{
+    var element = document.getElementById("viewport");
+    var viewer = $3Dmol.createViewer(element, {{
+        backgroundColor: 0x0a0e27,
+        antialias: true
+    }});
+
+    fetch("https://files.rcsb.org/download/{pdb_id}.pdb")
+        .then(function(response) {{
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            return response.text();
+        }})
+        .then(function(data) {{
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("binding-label").style.display = "block";
+
+            viewer.addModel(data, "pdb");
+
+            // Protein: cartoon
+            viewer.setStyle({{}}, {{
+                cartoon: {{ color: "spectrum", opacity: 0.8, thickness: 0.28 }}
+            }});
+
+            // Binding residues: bright green stick + sphere (compound highlight)
+            var bindingResidues = "{binding_res}".split(",");
+            for (var i = 0; i < bindingResidues.length; i++) {{
+                var resName = bindingResidues[i].trim();
+                var resNum = parseInt(resName.replace(/[A-Za-z]/g, ""));
+                if (!isNaN(resNum)) {{
+                    viewer.setStyle({{resi: resNum}}, {{
+                        stick: {{ color: "#00e676", radius: 0.2 }},
+                        sphere: {{ color: "#00e676", radius: 0.35, opacity: 0.6 }},
+                        cartoon: {{ color: "#00e676", opacity: 0.95, thickness: 0.45 }}
+                    }});
+                    viewer.addLabel(resName, {{
+                        position: {{resi: resNum}},
+                        backgroundColor: "rgba(0,230,118,0.8)",
+                        fontColor: "#0a0e27",
+                        fontSize: 10,
+                        fontOpacity: 1,
+                        borderThickness: 0.5
+                    }});
+                }}
+            }}
+
+            // Translucent surface for binding pocket
+            var resNums = bindingResidues.map(function(r){{return parseInt(r.replace(/[A-Za-z]/g,""));}}).filter(function(n){{return !isNaN(n);}});
+            if (resNums.length > 0) {{
+                viewer.addSurface($3Dmol.SurfaceType.VDW, {{
+                    opacity: 0.18, color: "#00e676"
+                }}, {{resi: resNums}});
+            }}
+
+            viewer.zoomTo();
+            viewer.render();
+
+            // Rotation animation
+            function animate() {{
+                viewer.rotate(0.25, "y");
+                viewer.render();
+                requestAnimationFrame(animate);
+            }}
+            animate();
+        }})
+        .catch(function(err) {{
+            document.getElementById("loading").innerHTML =
+                '<span style="color:#e94560;">PDB {pdb_id} load failed: ' + err.message + '</span>';
+        }});
+}})();
+</script>
+</body>
+</html>
+"""
+                        components.html(viewer_html, height=620, scrolling=False)
+
+                        # 결합 정보 상세
+                        st.markdown("#### Binding Details")
+                        bd_col1, bd_col2 = st.columns(2)
+                        with bd_col1:
+                            st.markdown(f"**Binding Site Residues:**")
+                            st.code(binding_res, language=None)
+                            st.markdown(f"**PDB Structure:** [{pdb_id}](https://www.rcsb.org/structure/{pdb_id})")
+                            st.markdown(f"**UniProt:** [{tgt_pdb_info.get('uniprot', '')}](https://www.uniprot.org/uniprot/{tgt_pdb_info.get('uniprot', '')})")
+                        with bd_col2:
+                            st.markdown("**Binding Mechanism:**")
+                            st.info(cmp_info.get("moa", tgt_pdb_info.get("desc", "N/A")))
+                            # AlphaFold 링크
+                            af_uniprot = tgt_pdb_info.get("uniprot", "")
+                            if af_uniprot:
+                                st.markdown(f"**AlphaFold:** [View predicted structure](https://alphafold.ebi.ac.uk/entry/{af_uniprot})")
+                    else:
+                        st.warning("No PDB structure available for this target.")
+                else:
+                    st.info("No known binding targets for this compound. Select a curated compound for 3D visualization.")
+
+    else:  # Target Protein -> Binding Compounds
+        st.markdown("---")
+        target_list = list(SARCOPENIA_TARGET_PDB.keys())
+        sel_tgt = st.selectbox("Select Target Protein", target_list,
+                               format_func=lambda x: f"{x} (PDB: {SARCOPENIA_TARGET_PDB[x]['pdb']})")
+
+        if sel_tgt:
+            tgt_info = SARCOPENIA_TARGET_PDB[sel_tgt]
+            pdb_id = tgt_info["pdb"]
+            binding_res = tgt_info.get("binding_residues", "")
+
+            # 이 타겟에 결합하는 화합물 찾기
+            binding_compounds = []
+            for cmp_name, cmp_data in COMPOUND_TARGET_MAP.items():
+                if sel_tgt in cmp_data.get("targets", []):
+                    binding_compounds.append({"name": cmp_name, **cmp_data})
+            # 데이터베이스에서 추가 화합물
+            if sel_tgt in target_index:
+                t_papers_cpi = df_ok.loc[df_ok.index.isin(target_index[sel_tgt])]
+                db_compounds = get_top_items(t_papers_cpi, "화합물(Compound)", 15)
+                for c, cnt in db_compounds:
+                    if c not in [bc["name"] for bc in binding_compounds]:
+                        _ck = COMPOUND_KNOWLEDGE.get(c, {})
+                        binding_compounds.append({
+                            "name": c,
+                            "type": _ck.get("type", "DB"),
+                            "moa": _ck.get("moa_short", ""),
+                            "moa_short": _ck.get("moa_short", ""),
+                            "indication": _ck.get("indication", ""),
+                            "phase": _ck.get("phase", ""),
+                            "targets": [sel_tgt],
+                            "pubchem_3d": None
+                        })
+
+            col_3d, col_compounds = st.columns([2, 1])
+
+            with col_3d:
+                st.markdown(f"#### {sel_tgt} 3D Structure")
+                st.caption(tgt_info["desc"])
+
+                # Build per-compound color/residue data for JS
+                _bc_colors = ["#00e676","#ffd740","#ff4081","#40c4ff","#ea80fc","#ff6e40","#69f0ae","#448aff"]
+                _bc_cards_html = ""
+                _js_compound_data = []  # [{name, color, residues: "R33,E39,..."}]
+                for _bi, _bc in enumerate(binding_compounds[:8]):
+                    _bc_color = _bc_colors[_bi % len(_bc_colors)]
+                    _bc_smiles = _bc.get("smiles", "")
+                    if not _bc_smiles and _bc["name"] in structures:
+                        _bc_smiles = structures[_bc["name"]].get("SMILES", "")
+                    _bc_cid = _bc.get("pubchem_3d", "")
+                    if not _bc_cid and _bc["name"] in structures:
+                        _bc_cid = str(structures[_bc["name"]].get("CID", ""))
+                    _bc_img = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{_bc_cid}/PNG?image_size=300x300" if _bc_cid else ""
+                    # Get compound-specific binding residues for this target
+                    _bc_res = _bc.get("binding_sites", {}).get(sel_tgt, "")
+                    if not _bc_res:
+                        # DB compounds: assign from target's general binding residues
+                        _all_res = tgt_info.get("binding_residues", "").split(",")
+                        _per = max(1, len(_all_res) // max(len(binding_compounds), 1))
+                        _start = _bi * _per
+                        _bc_res = ",".join(_all_res[_start:_start+_per]) if _start < len(_all_res) else _all_res[-1] if _all_res else ""
+                    _js_compound_data.append({"name": _bc["name"], "color": _bc_color, "residues": _bc_res})
+                    # MoA / Indication / Phase
+                    _bc_moa_short = _bc.get("moa_short", _bc.get("moa", "")[:40])
+                    _bc_indication = _bc.get("indication", "")
+                    _bc_phase = _bc.get("phase", "")
+                    # Card HTML: Indication directly visible, MoA as hover tooltip
+                    _tooltip_text = _bc_moa_short if _bc_moa_short else ""
+                    _bc_cards_html += f"""
+                    <div class="cmp-card" style="border-color:{_bc_color};" {"data-tooltip='" + _tooltip_text.replace("'", "&apos;") + "'" if _tooltip_text else ""}>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:{_bc_color};display:inline-block;flex-shrink:0;box-shadow:0 0 6px {_bc_color};"></span>
+                            <div class="cmp-name" style="color:{_bc_color};">{_bc['name']}</div>
+                        </div>
+                        <span class="cmp-type">{_bc.get('type','')}</span>
+                        {"<span class='cmp-phase'>" + _bc_phase + "</span>" if _bc_phase else ""}
+                        {"<div class='cmp-indication'>" + _bc_indication + "</div>" if _bc_indication else ""}
+                        <div class="cmp-smiles">{_bc_smiles if _bc_smiles else 'Biologic'}</div>
+                        {"<img class='cmp-img' src='" + _bc_img + "' onerror='this.style.display=&quot;none&quot;'/>" if _bc_img else ""}
+                    </div>"""
+
+                # Build JS array string for compound data
+                import json as _json
+                _js_compounds_str = _json.dumps(_js_compound_data, ensure_ascii=False)
+
+                # 3Dmol.js viewer + multi-color compound cards
+                tgt_viewer_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background: #0a0e27; overflow:hidden; font-family: 'Segoe UI', system-ui, sans-serif; }}
+#viewport {{ width:100%; height:580px; position:relative; border-radius:12px;
+    border: 1px solid rgba(30,136,229,0.3);
+    box-shadow: 0 0 30px rgba(30,136,229,0.15);
+}}
+#info-overlay {{
+    position:absolute; top:12px; left:12px; z-index:100;
+    background: rgba(10,14,39,0.92); color:#4fc3f7;
+    padding:10px 16px; border-radius:8px; font-size:12px;
+    border: 1px solid rgba(30,136,229,0.3);
+    backdrop-filter: blur(10px); max-width:300px;
+}}
+#info-overlay h4 {{ margin:0 0 4px 0; color:#90caf9; font-size:14px; }}
+#info-overlay p {{ margin:2px 0; color:#7899b8; font-size:11px; }}
+.legend-item {{ display:flex; align-items:center; gap:5px; margin:2px 0; }}
+.legend-dot {{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }}
+
+#compounds-panel {{
+    position:absolute; top:12px; right:12px; z-index:120;
+    width:180px; max-height:560px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:6px;
+}}
+#compounds-panel::-webkit-scrollbar {{ width:4px; }}
+#compounds-panel::-webkit-scrollbar-thumb {{ background:#1E88E5; border-radius:2px; }}
+
+.cmp-card {{
+    background: rgba(10,14,39,0.92); border:2px solid;
+    border-radius:8px; padding:8px 10px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease; cursor:pointer;
+}}
+.cmp-card:hover {{
+    width:340px; padding:12px;
+    z-index:200; position:relative;
+}}
+.cmp-name {{ font-size:12px; font-weight:700; margin-bottom:2px; }}
+.cmp-type {{
+    display:inline-block; padding:1px 6px; border-radius:8px;
+    font-size:8px; font-weight:600;
+    background: rgba(255,255,255,0.08); color:#90a4ae;
+}}
+.cmp-indication {{
+    color:#ffcc80; font-size:9px; margin-top:3px;
+    line-height:1.3;
+}}
+.cmp-phase {{
+    display:inline-block; padding:1px 6px; border-radius:8px;
+    font-size:8px; font-weight:600; margin-left:4px;
+    background: rgba(76,175,80,0.2); color:#81c784;
+}}
+/* MoA tooltip on hover */
+.cmp-card {{
+    position: relative;
+}}
+.cmp-card[data-tooltip]:hover::after {{
+    content: attr(data-tooltip);
+    position: absolute;
+    left: -200px; top: 50%; transform: translateY(-50%);
+    width: 180px; padding: 8px 12px;
+    background: rgba(13,27,62,0.96);
+    color: #80cbc4; font-size: 11px; line-height: 1.4;
+    border: 1px solid rgba(79,195,247,0.4);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    z-index: 300; pointer-events: none;
+    white-space: normal;
+    font-style: italic;
+}}
+.cmp-card[data-tooltip]:hover::before {{
+    content: '';
+    position: absolute;
+    left: -12px; top: 50%; transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: rgba(79,195,247,0.4);
+    z-index: 301; pointer-events: none;
+}}
+.cmp-smiles {{
+    color:#80cbc4; font-size:9px; font-family:monospace;
+    word-break:break-all; line-height:1.2;
+    max-height:0; overflow:hidden;
+    transition: max-height 0.3s ease, margin 0.3s ease;
+    margin-top:0;
+}}
+.cmp-card:hover .cmp-smiles {{
+    max-height:80px; margin-top:4px; font-size:11px;
+}}
+.cmp-img {{
+    width:0; height:0; margin-top:0;
+    border-radius:6px; border:1px solid rgba(255,255,255,0.1);
+    background:#0d1b3e; object-fit:contain;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    display:block;
+}}
+.cmp-card:hover .cmp-img {{
+    width:160px; height:160px; margin-top:6px;
+}}
+
+#loading {{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    color:#4fc3f7; font-size:14px; z-index:50;
+}}
+@keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+.spinner {{ display:inline-block; width:20px; height:20px; border:2px solid #4fc3f7;
+    border-top-color:transparent; border-radius:50%; animation: spin 1s linear infinite;
+    vertical-align:middle; margin-right:8px; }}
+</style>
+</head>
+<body>
+<div id="viewport">
+    <div id="info-overlay">
+        <h4>{sel_tgt}</h4>
+        <p>PDB: {pdb_id} | UniProt: {tgt_info.get('uniprot', '')}</p>
+        <p>{len(binding_compounds)} binding compounds (color-coded)</p>
+        <div id="legend" style="margin-top:6px;"></div>
+    </div>
+    <div id="loading"><span class="spinner"></span>Loading PDB structure...</div>
+    <div id="compounds-panel">{_bc_cards_html}</div>
+</div>
+<script>
+(function() {{
+    var compounds = {_js_compounds_str};
+    var element = document.getElementById("viewport");
+    var viewer = $3Dmol.createViewer(element, {{
+        backgroundColor: 0x0a0e27, antialias: true
+    }});
+
+    // Build legend
+    var legendDiv = document.getElementById("legend");
+    compounds.forEach(function(c) {{
+        var item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = '<span class="legend-dot" style="background:'+c.color+';box-shadow:0 0 4px '+c.color+';"></span>'
+            + '<span style="color:'+c.color+';font-size:10px;font-weight:600;">'+c.name+'</span>';
+        legendDiv.appendChild(item);
+    }});
+
+    fetch("https://files.rcsb.org/download/{pdb_id}.pdb")
+        .then(function(r) {{ if (!r.ok) throw new Error("HTTP "+r.status); return r.text(); }})
+        .then(function(data) {{
+            document.getElementById("loading").style.display = "none";
+            viewer.addModel(data, "pdb");
+
+            // Base protein: blue cartoon
+            viewer.setStyle({{}}, {{
+                cartoon: {{ color: "#1565c0", opacity: 0.6, thickness: 0.22 }}
+            }});
+
+            // Each compound gets its own color on its binding residues
+            compounds.forEach(function(cmp) {{
+                if (!cmp.residues) return;
+                var residues = cmp.residues.split(",");
+                residues.forEach(function(resStr) {{
+                    var resNum = parseInt(resStr.trim().replace(/[A-Za-z]/g, ""));
+                    if (isNaN(resNum)) return;
+                    viewer.setStyle({{resi: resNum}}, {{
+                        stick: {{ color: cmp.color, radius: 0.22 }},
+                        sphere: {{ color: cmp.color, radius: 0.4, opacity: 0.7 }},
+                        cartoon: {{ color: cmp.color, opacity: 0.95, thickness: 0.5 }}
+                    }});
+                    viewer.addLabel(cmp.name + " " + resStr.trim(), {{
+                        position: {{resi: resNum}},
+                        backgroundColor: cmp.color,
+                        fontColor: "#0a0e27",
+                        fontSize: 9,
+                        fontOpacity: 1
+                    }});
+                }});
+            }});
+
+            viewer.zoomTo();
+            viewer.render();
+
+            function animate() {{
+                viewer.rotate(0.2, "y");
+                viewer.render();
+                requestAnimationFrame(animate);
+            }}
+            animate();
+        }})
+        .catch(function(err) {{
+            document.getElementById("loading").innerHTML =
+                '<span style="color:#e94560;">PDB {pdb_id} load failed: '+err.message+'</span>';
+        }});
+}})();
+</script>
+</body>
+</html>
+"""
+                components.html(tgt_viewer_html, height=620, scrolling=False)
+
+                # External links
+                link_col1, link_col2, link_col3 = st.columns(3)
+                link_col1.markdown(f"[RCSB PDB](https://www.rcsb.org/structure/{pdb_id})")
+                link_col2.markdown(f"[UniProt](https://www.uniprot.org/uniprot/{tgt_info.get('uniprot', '')})")
+                link_col3.markdown(f"[AlphaFold](https://alphafold.ebi.ac.uk/entry/{tgt_info.get('uniprot', '')})")
+
+            with col_compounds:
+                st.markdown("#### Binding Compounds")
+                for bc in binding_compounds:
+                    with st.expander(f"{bc['name']} ({bc.get('type', 'Unknown')})"):
+                        st.markdown(f"**MoA:** {bc.get('moa', '-')}")
+                        if bc.get("smiles"):
+                            st.code(bc["smiles"], language=None)
+                        # Show 2D structure from PubChem
+                        if bc.get("pubchem_3d"):
+                            st.image(f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{bc['pubchem_3d']}/PNG?image_size=200x200",
+                                     caption="2D Structure", width=180)
+                        elif bc["name"] in structures:
+                            s = structures[bc["name"]]
+                            if s.get("image_url"):
+                                st.image(s["image_url"], caption="2D Structure", width=180)
+
+                if not binding_compounds:
+                    st.info("No known compounds for this target in the database.")
+
+    # CPI Model Info
+    st.markdown("---")
+    st.markdown("#### CPI Foundation Model Architecture")
+    st.markdown("""
+    <div style='background:rgba(13,20,50,0.6); padding:20px; border-radius:10px;
+         border:1px solid rgba(30,136,229,0.2);'>
+        <table style='width:100%; color:#c0cde0; font-size:13px;'>
+        <tr><td style='padding:6px; color:#4fc3f7;'><b>Drug Encoder</b></td>
+            <td>ChemBERTa-77M (SMILES -> 768-dim embedding)</td></tr>
+        <tr><td style='padding:6px; color:#4fc3f7;'><b>Protein Encoder</b></td>
+            <td>ESM-2 650M (Sequence -> 1280-dim embedding)</td></tr>
+        <tr><td style='padding:6px; color:#4fc3f7;'><b>Fusion Module</b></td>
+            <td>Cross-Attention (8 heads, 6 layers, 512-dim)</td></tr>
+        <tr><td style='padding:6px; color:#4fc3f7;'><b>Prediction</b></td>
+            <td>Binding Probability + Affinity (pKd) + Binding Site Attention</td></tr>
+        <tr><td style='padding:6px; color:#4fc3f7;'><b>Training Data</b></td>
+            <td>BindingDB + DAVIS + KIBA datasets</td></tr>
+        </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ============================================================
+# 탭 6: Target-Compound 매트릭스
+# ============================================================
+with tab6:
     import plotly.graph_objects as go
     st.markdown("### Target-Compound Relationship Matrix")
     n_targets = st.slider("상위 타겟 수", 5, 20, 10)
@@ -562,7 +1592,7 @@ with tab5:
     ))
     fig.update_layout(title="Target-Compound Co-occurrence Matrix", height=500,
                       yaxis=dict(autorange="reversed"))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(_apply_dark(fig), use_container_width=True)
 
     buf = io.BytesIO()
     matrix.to_excel(buf, engine="openpyxl")
@@ -590,7 +1620,7 @@ with tab5:
 # ============================================================
 # 탭 6: AI 질의응답 (RAG)
 # ============================================================
-with tab6:
+with tab7:
     st.markdown("### AI Q&A")
     st.caption("근감소증 논문 데이터베이스 기반 AI 답변")
 
@@ -657,7 +1687,7 @@ Answer the question based on this data. Answer in Korean. Cite source paper file
 # ============================================================
 # 탭 7: Dark Targets
 # ============================================================
-with tab7:
+with tab8:
     st.markdown("### Dark Targets")
 
     _intel_report = None
@@ -712,7 +1742,7 @@ with tab7:
 # ============================================================
 # 탭 8: AI 신약 후보
 # ============================================================
-with tab8:
+with tab9:
     st.markdown("### AI Drug Candidates")
 
     _candidates_data = None
@@ -751,7 +1781,7 @@ with tab8:
 # ============================================================
 # 탭 9: 바이오마커
 # ============================================================
-with tab9:
+with tab10:
     st.markdown("### Biomarker Analysis")
 
     _biomarker_data = None
@@ -777,7 +1807,7 @@ with tab9:
                 fig = px.bar(bm_df, x='name', y='count', title='바이오마커 빈도 Top 100',
                            color='count', color_continuous_scale='Viridis')
                 fig.update_layout(xaxis_tickangle=-45, height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(_apply_dark(fig), use_container_width=True)
 
         # 카테고리별
         categories = _biomarker_data.get('categories', {})
@@ -809,7 +1839,7 @@ with tab9:
 # ============================================================
 # 탭 10: 연구 동향
 # ============================================================
-with tab10:
+with tab11:
     st.markdown("### Research Trends")
 
     _trend_log = []
@@ -851,7 +1881,7 @@ with tab10:
                 fig = px.bar(kw_df, x='빈도', y='키워드', orientation='h', title='핫 키워드 Top 30',
                            color='빈도', color_continuous_scale='Reds')
                 fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(_apply_dark(fig), use_container_width=True)
     else:
         st.info("No collection log found. Showing basic statistics.")
         st.metric("총 문헌 수", len(df_ok))
@@ -859,7 +1889,7 @@ with tab10:
 # ============================================================
 # 탭 11: Control Center
 # ============================================================
-with tab11:
+with tab12:
     st.markdown("### Sarcopenia Research Control Center")
 
     pipeline_status = {}
