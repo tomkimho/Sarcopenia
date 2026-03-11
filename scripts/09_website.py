@@ -986,29 +986,188 @@ with tab4:
                 if act_info.get("status") == "found":
                     st.markdown(f"**{act_name}** — {act_info.get('MolecularFormula', '')} · MW: {act_info.get('MolecularWeight', '')} g/mol")
 
-        c1, c2, c3 = st.columns(3)
-        c1.metric("관련 논문 수", f"{len(c_papers)}건")
-        c2.metric("평균 관련도", f"{c_papers['관련도'].mean():.1f}")
-        clinical = len(c_papers[c_papers["연구유형"] == "Clinical"]) if "연구유형" in c_papers.columns else 0
-        c3.metric("임상 연구", f"{clinical}건")
+        # ── COMPOUND_KNOWLEDGE / COMPOUND_TARGET_MAP에서 보강 정보 가져오기 ──
+        _ck4 = COMPOUND_KNOWLEDGE.get(selected_compound, {}) if "COMPOUND_KNOWLEDGE" in dir() else {}
+        _ctm4 = COMPOUND_TARGET_MAP.get(selected_compound, {}) if "COMPOUND_TARGET_MAP" in dir() else {}
 
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.markdown("#### 타겟")
-            c_tgt = get_top_items(c_papers, "타겟(Target)", 10, normalize_target)
+        # ── 메트릭 카드 ──
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Papers", f"{len(c_papers)}")
+        c2.metric("Avg Relevance", f"{c_papers['관련도'].mean():.1f}/5")
+        clinical = len(c_papers[c_papers["연구유형"] == "Clinical"]) if "연구유형" in c_papers.columns else 0
+        c3.metric("Clinical Studies", f"{clinical}")
+        _cmp_phase4 = _ck4.get("phase", _ctm4.get("phase", ""))
+        c4.metric("Dev Phase", _cmp_phase4 if _cmp_phase4 else "-")
+
+        # ── MoA + Indication 요약 배너 ──
+        _moa4 = _ck4.get("moa_short", _ctm4.get("moa_short", ""))
+        _ind4 = _ck4.get("indication", _ctm4.get("indication", ""))
+        _pw4 = _ck4.get("pathway", "")
+        if _moa4 or _ind4:
+            st.markdown(f"""<div style="background:linear-gradient(135deg, rgba(13,27,62,0.8), rgba(30,136,229,0.15));
+                border:1px solid rgba(30,136,229,0.3); border-radius:10px; padding:12px 18px; margin:8px 0;">
+                <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                    {"<div><span style='color:#546e7a;font-size:10px;'>MECHANISM OF ACTION</span><div style=color:#4fc3f7;font-size:13px;font-weight:600;>" + _moa4 + "</div></div>" if _moa4 else ""}
+                    {"<div><span style='color:#546e7a;font-size:10px;'>INDICATION</span><div style=color:#ffcc80;font-size:13px;font-weight:600;>" + _ind4 + "</div></div>" if _ind4 else ""}
+                    {"<div><span style='color:#546e7a;font-size:10px;'>KEY PATHWAY</span><div style=color:#69f0ae;font-size:12px;>" + _pw4 + "</div></div>" if _pw4 else ""}
+                </div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # ═══════════════════════════════════════════════════════
+        # 핵심: Binding Targets → Disease → Biomarkers 연쇄 분석
+        # ═══════════════════════════════════════════════════════
+
+        # 1. 논문에서 바인딩 타겟 추출
+        c_tgt = get_top_items(c_papers, "타겟(Target)", 10, normalize_target)
+
+        # 2. 논문에서 질환아형 추출
+        _c4_diseases = []
+        for v in c_papers["질환아형"].dropna():
+            for d in str(v).strip("[]'\" ").split(","):
+                d = d.strip().strip("'\" ")
+                if d and len(d) > 2:
+                    _c4_diseases.append(d)
+        _c4_dis_counter = Counter(_c4_diseases)
+
+        # 3. 논문에서 바이오마커 추출
+        _c4_biomarkers = []
+        if "바이오마커" in c_papers.columns:
+            for v in c_papers["바이오마커"].dropna():
+                for b in str(v).split(","):
+                    b = b.strip()
+                    if b and len(b) > 2 and len(b) < 50:
+                        _c4_biomarkers.append(b)
+        _c4_bm_counter = Counter(_c4_biomarkers)
+        _c4_bm_total = sum(_c4_bm_counter.values()) or 1
+
+        # ── Binding Targets (좌) + Disease Indications (우) ──
+        col_tgt4, col_dis4 = st.columns(2)
+
+        with col_tgt4:
+            st.markdown("#### Binding Targets")
             if c_tgt:
-                c_tgt_df = pd.DataFrame(c_tgt, columns=["타겟", "건수"])
-                fig = px.bar(c_tgt_df, x="건수", y="타겟", orientation="h",
-                            color="건수", color_continuous_scale="Purples")
-                fig.update_layout(height=300, yaxis=dict(autorange="reversed"))
+                _tgt4_html = ""
+                _tgt4_colors = ["#4fc3f7", "#00e676", "#ffd740", "#ff4081", "#ea80fc", "#ff6e40", "#69f0ae", "#40c4ff"]
+                for i, (tgt_name, tgt_cnt) in enumerate(c_tgt[:8]):
+                    _tc = _tgt4_colors[i % len(_tgt4_colors)]
+                    _tgt_bio4 = TARGET_BIOLOGY.get(tgt_name, {})
+                    _tgt_func = _tgt_bio4.get("function", "")[:60] if _tgt_bio4 else ""
+                    _tgt_pdb = SARCOPENIA_TARGET_PDB.get(tgt_name, {})
+                    _pdb_id = _tgt_pdb.get("pdb", "")
+                    _pdb_badge = f"<span style='padding:1px 5px;border-radius:4px;font-size:9px;background:rgba(0,230,118,0.15);color:#69f0ae;margin-left:6px;'>PDB: {_pdb_id}</span>" if _pdb_id else ""
+                    _bar_pct = min(100, int(tgt_cnt / max(c_tgt[0][1], 1) * 100))
+                    _tgt4_html += f"""<div style="margin:5px 0;padding:8px 12px;background:rgba(13,27,62,0.5);
+                        border-radius:8px;border-left:4px solid {_tc};transition:all 0.3s;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div>
+                                <span style="color:{_tc};font-size:13px;font-weight:700;">{tgt_name}</span>
+                                {_pdb_badge}
+                            </div>
+                            <span style="color:#78909c;font-size:11px;font-weight:600;">{tgt_cnt} papers</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:4px;margin:4px 0 3px 0;">
+                            <div style="background:{_tc};width:{_bar_pct}%;height:100%;border-radius:3px;"></div>
+                        </div>
+                        {"<div style='color:#78909c;font-size:10px;line-height:1.3;'>" + _tgt_func + "</div>" if _tgt_func else ""}
+                    </div>"""
+                st.markdown(_tgt4_html, unsafe_allow_html=True)
+
+        with col_dis4:
+            st.markdown("#### Disease Indications")
+            _dis4_colors = ["#ff6b6b", "#ffa94d", "#ffd43b", "#69db7c", "#74c0fc", "#b197fc"]
+            if _c4_dis_counter:
+                _dis4_html = ""
+                _dis4_max = max(_c4_dis_counter.values())
+                for i, (dis, cnt) in enumerate(_c4_dis_counter.most_common(6)):
+                    _dc = _dis4_colors[i % len(_dis4_colors)]
+                    _bar_pct = min(100, int(cnt / _dis4_max * 100))
+                    # 이 질환에서 관련 타겟 찾기
+                    _related_tgts = []
+                    for tgt_name, tgt_bio in TARGET_BIOLOGY.items():
+                        if dis in tgt_bio.get("diseases", []) or any(dis.lower() in d.lower() for d in tgt_bio.get("diseases", [])):
+                            _related_tgts.append(tgt_name)
+                    _tgt_tags = " ".join([f"<span style='padding:1px 4px;border-radius:3px;font-size:8px;background:rgba(79,195,247,0.12);color:#4fc3f7;'>{t}</span>" for t in _related_tgts[:3]])
+                    _dis4_html += f"""<div style="margin:5px 0;padding:8px 12px;background:rgba(13,27,62,0.5);
+                        border-radius:8px;border-left:4px solid {_dc};">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="color:{_dc};font-size:12px;font-weight:600;">{dis}</span>
+                            <span style="color:#78909c;font-size:11px;">{cnt} papers</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:4px;margin:4px 0 3px 0;">
+                            <div style="background:{_dc};width:{_bar_pct}%;height:100%;border-radius:3px;opacity:0.7;"></div>
+                        </div>
+                        {"<div style='margin-top:2px;display:flex;gap:3px;flex-wrap:wrap;'>" + _tgt_tags + "</div>" if _tgt_tags else ""}
+                    </div>"""
+                st.markdown(_dis4_html, unsafe_allow_html=True)
+
+        # ── Biomarkers with Importance Score ──
+        st.markdown("---")
+        st.markdown("#### Key Biomarkers (by Evidence Strength)")
+        if _c4_bm_counter:
+            _bm4_top = _c4_bm_counter.most_common(12)
+            _bm4_max = _bm4_top[0][1] if _bm4_top else 1
+            _bm4_html = '<div style="display:flex;flex-wrap:wrap;gap:6px;">'
+            for bm, cnt in _bm4_top:
+                _importance = min(5, max(1, round(cnt / _bm4_max * 5)))
+                _stars = "★" * _importance + "☆" * (5 - _importance)
+                _pct = cnt / _c4_bm_total * 100
+                # Color by importance
+                if _importance >= 4:
+                    _bm_color = "#00e676"
+                    _bm_bg = "rgba(0,230,118,0.1)"
+                elif _importance >= 3:
+                    _bm_color = "#ffd740"
+                    _bm_bg = "rgba(255,215,64,0.1)"
+                elif _importance >= 2:
+                    _bm_color = "#4fc3f7"
+                    _bm_bg = "rgba(79,195,247,0.1)"
+                else:
+                    _bm_color = "#78909c"
+                    _bm_bg = "rgba(120,144,156,0.08)"
+                _bm4_html += f"""<div style="background:{_bm_bg};border:1px solid {_bm_color}30;
+                    border-radius:8px;padding:8px 12px;min-width:160px;flex:1;max-width:220px;">
+                    <div style="color:{_bm_color};font-size:12px;font-weight:600;margin-bottom:2px;">{bm}</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span style="color:#ffd740;font-size:11px;letter-spacing:1px;">{_stars}</span>
+                        <span style="color:#546e7a;font-size:10px;">{cnt} papers</span>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.05);border-radius:2px;height:3px;margin-top:4px;">
+                        <div style="background:{_bm_color};width:{min(100, _pct * 3)}%;height:100%;border-radius:2px;"></div>
+                    </div>
+                </div>"""
+            _bm4_html += '</div>'
+            st.markdown(_bm4_html, unsafe_allow_html=True)
+
+        # ── 타겟 bar chart + MoA ──
+        st.markdown("---")
+        col_chart4, col_moa4 = st.columns(2)
+        with col_chart4:
+            st.markdown("#### Target Evidence Distribution")
+            if c_tgt:
+                c_tgt_df = pd.DataFrame(c_tgt[:10], columns=["Target", "Papers"])
+                fig = px.bar(c_tgt_df, x="Papers", y="Target", orientation="h",
+                            color="Papers", color_continuous_scale="YlOrRd")
+                fig.update_layout(height=300, yaxis=dict(autorange="reversed"), margin=dict(t=5, b=5, l=5, r=5),
+                                  showlegend=False, coloraxis_showscale=False)
                 st.plotly_chart(_apply_dark(fig), use_container_width=True)
-        with col_r:
-            st.markdown("#### 기전 (MoA) 요약")
+        with col_moa4:
+            st.markdown("#### MoA Summary (from Literature)")
             if "기전(MoA)" in c_papers.columns:
-                for _, row in c_papers.head(5).iterrows():
+                _moa_shown = 0
+                for _, row in c_papers.sort_values("관련도", ascending=False).iterrows():
                     moa = row.get("기전(MoA)", "")
-                    if moa and str(moa) != "nan":
-                        st.caption(f"• {moa}")
+                    if moa and str(moa) != "nan" and len(str(moa)) > 10:
+                        rel = int(row.get("관련도", 0))
+                        st.markdown(f"""<div style="background:rgba(13,27,62,0.4);border-radius:6px;padding:6px 10px;margin:3px 0;
+                            border-left:3px solid {'#00e676' if rel>=4 else '#ffd740'};">
+                            <div style="color:#b0bec5;font-size:11px;line-height:1.4;">{str(moa)[:150]}</div>
+                            <div style="color:#546e7a;font-size:9px;">Relevance: {'★' * rel}{'☆' * (5-rel)}</div>
+                        </div>""", unsafe_allow_html=True)
+                        _moa_shown += 1
+                        if _moa_shown >= 5:
+                            break
 
 # ============================================================
 # 탭 5: CPI Binding Visualization (3D 단백질-화합물 결합)
