@@ -1,0 +1,9 @@
+.git
+.github
+__pycache__
+*.pyc
+.env
+*.md
+!requirements.txt
+venv
+.venv
