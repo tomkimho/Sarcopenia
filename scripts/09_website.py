@@ -430,6 +430,24 @@ with st.sidebar:
             filtered = filtered[filtered["질환아형"].isin(selected_subs)]
 
 # ============================================================
+# 주요 근감소증 타겟 PDB 매핑 (전역 - tab3, tab5에서 공용)
+# ============================================================
+SARCOPENIA_TARGET_PDB = {
+    "Myostatin/GDF-8": {"pdb": "3HH2", "uniprot": "O14793", "desc": "Myostatin (Growth Differentiation Factor 8) - 근육 성장 억제 인자", "binding_residues": "W28,W30,Y33,D56,F63,K65,H67,Y111"},
+    "ActRIIB": {"pdb": "2QLU", "uniprot": "Q13705", "desc": "Activin Receptor Type IIB - Myostatin 수용체", "binding_residues": "E28,Y31,K56,E63,K74,P83,F101"},
+    "mTOR/PI3K/Akt": {"pdb": "4DRH", "uniprot": "P42345", "desc": "mTOR kinase - 단백질 합성 촉진 경로", "binding_residues": "L2185,Y2225,D2195,V2240,M2345"},
+    "IGF-1/IGF-1R": {"pdb": "1IMX", "uniprot": "P05019", "desc": "Insulin-like Growth Factor 1 - 근육 성장 촉진", "binding_residues": "G1,P2,E3,T4,L5,C6"},
+    "MuRF1/MAFbx": {"pdb": "4FZT", "uniprot": "Q969Q1", "desc": "E3 ubiquitin ligase MuRF1 - 근단백 분해", "binding_residues": "C23,H25,C44,C47,C54,H57"},
+    "FoxO3": {"pdb": "2UZK", "uniprot": "O43524", "desc": "Forkhead box O3 - 근위축 전사인자", "binding_residues": "H212,S215,W234,H242,S256"},
+    "AMPK/PGC-1alpha": {"pdb": "4CFE", "uniprot": "Q13131", "desc": "AMP-activated protein kinase - 에너지 센서", "binding_residues": "R83,D88,T106,N144,D151"},
+    "RIPK1/RIPK3": {"pdb": "4ITJ", "uniprot": "Q9Y572", "desc": "Receptor-interacting protein kinase 3 - Necroptosis 매개", "binding_residues": "L27,V35,A48,K50,E60,D142"},
+    "NF-kB": {"pdb": "1NFI", "uniprot": "Q04206", "desc": "Nuclear Factor kappa B - 염증 전사인자", "binding_residues": "R33,E39,R57,Y60,K221,R246"},
+    "Androgen Receptor": {"pdb": "1E3G", "uniprot": "P10275", "desc": "Androgen Receptor - SARMs 타겟", "binding_residues": "L704,N705,R752,F764,M780,T877"},
+    "GDF-15": {"pdb": "5VZ3", "uniprot": "Q99988", "desc": "Growth Differentiation Factor 15 - 식욕/체중 조절", "binding_residues": "R189,H193,D200,W203,I206"},
+    "HDAC6": {"pdb": "5EDU", "uniprot": "Q9UBN7", "desc": "Histone Deacetylase 6 - 미세소관/자가포식 조절", "binding_residues": "H573,H574,D612,H614,D705,L749"},
+}
+
+# ============================================================
 # 탭 구성
 # ============================================================
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
@@ -592,54 +610,336 @@ with tab2:
 # ============================================================
 with tab3:
     import plotly.express as px
+    import streamlit.components.v1 as _comp3
     st.markdown("### Target Analysis")
+
+    # ── Target Biology DB (논문 AI 분석 기반) ──
+    TARGET_BIOLOGY = {
+        "Myostatin/GDF-8": {
+            "gene": "MSTN", "chromosome": "2q32.2", "protein_size": "375 aa",
+            "function": "TGF-beta superfamily 음성 조절자로 골격근 성장을 억제",
+            "diseases": ["Age-related sarcopenia", "Cancer cachexia", "Muscular dystrophy", "Sarcopenic obesity", "Disuse atrophy"],
+            "pathways": ["Myostatin/ActRII/SMAD2/3", "IGF-1/PI3K/Akt/mTOR", "Ubiquitin-proteasome", "NF-kB", "Wnt/beta-catenin"],
+            "genes": ["MSTN", "ACVR2B", "SMAD2", "SMAD3", "SMAD7", "FSTL3 (Follistatin-like 3)", "GDF11", "TGFBR1"],
+            "biomarkers": ["Myostatin level", "Grip strength", "IL-6", "TNF-alpha", "Muscle mass (ASM/ht2)"],
+        },
+        "ActRIIB": {
+            "gene": "ACVR2B", "chromosome": "3p22.2", "protein_size": "512 aa",
+            "function": "Activin/Myostatin 수용체 - 근육 성장 억제 신호 전달",
+            "diseases": ["Age-related sarcopenia", "Cancer cachexia", "Muscular dystrophy", "Disuse atrophy"],
+            "pathways": ["Myostatin/ActRII/SMAD2/3", "Activin A signaling", "BMP signaling", "Wnt/beta-catenin"],
+            "genes": ["ACVR2B", "ACVR2A", "MSTN", "INHBA (Activin A)", "FST (Follistatin)", "BMPR1A", "SMAD4"],
+            "biomarkers": ["Activin A level", "Follistatin", "Grip strength", "Lean body mass"],
+        },
+        "mTOR/PI3K/Akt": {
+            "gene": "MTOR", "chromosome": "1p36.22", "protein_size": "2549 aa",
+            "function": "세포 성장/대사 마스터 조절자 - 근단백질 합성 핵심 경로",
+            "diseases": ["Age-related sarcopenia", "Sarcopenic obesity", "Diabetic sarcopenia", "Drug-induced atrophy", "Cancer cachexia"],
+            "pathways": ["PI3K/Akt/mTORC1", "mTORC1/S6K1/4E-BP1", "AMPK/TSC2", "Insulin/IGF-1 signaling", "Autophagy-lysosome"],
+            "genes": ["MTOR", "PIK3CA", "AKT1", "RPS6KB1 (S6K1)", "EIF4EBP1 (4E-BP1)", "TSC1", "TSC2", "RPTOR (Raptor)"],
+            "biomarkers": ["p-mTOR/p-S6K1", "Muscle protein synthesis rate", "Grip strength", "SPPB score"],
+        },
+        "IGF-1/IGF-1R": {
+            "gene": "IGF1 / IGF1R", "chromosome": "12q23.2 / 15q26.3", "protein_size": "70 aa / 1367 aa",
+            "function": "근육 성장/분화 촉진 - 동화 호르몬 신호 전달",
+            "diseases": ["Age-related sarcopenia", "GH deficiency", "Sarcopenic obesity", "Cancer cachexia", "Diabetic sarcopenia"],
+            "pathways": ["IGF-1/IGF-1R/IRS-1", "PI3K/Akt/mTOR", "MAPK/ERK", "GH/IGF-1 axis", "Satellite cell activation"],
+            "genes": ["IGF1", "IGF1R", "IRS1", "IRS2", "GHR", "GH1", "IGFBP3", "IGFBP5"],
+            "biomarkers": ["Serum IGF-1", "IGFBP-3", "Grip strength", "Gait speed", "Muscle mass"],
+        },
+        "MuRF1/MAFbx": {
+            "gene": "TRIM63 / FBXO32", "chromosome": "1p36.11 / 8q24.13", "protein_size": "353 aa / 355 aa",
+            "function": "E3 유비퀴틴 리가제 - 근단백질 분해 핵심 효소",
+            "diseases": ["Drug-induced atrophy", "Disuse atrophy", "Cancer cachexia", "Age-related sarcopenia", "Sepsis-induced myopathy"],
+            "pathways": ["Ubiquitin-proteasome system", "FoxO3/Atrogin-1/MuRF1", "NF-kB/MuRF1", "Glucocorticoid receptor/GR", "IGF-1/Akt (inhibitory)"],
+            "genes": ["TRIM63 (MuRF1)", "FBXO32 (MAFbx/Atrogin-1)", "FOXO3", "FOXO1", "UBB", "UBC", "PSMA1", "NFKB1"],
+            "biomarkers": ["MuRF1 expression", "Atrogin-1 expression", "Myotube diameter", "Grip strength", "Muscle mass"],
+        },
+        "FoxO3": {
+            "gene": "FOXO3", "chromosome": "6q21", "protein_size": "673 aa",
+            "function": "전사인자 - 근위축 유전자(MuRF1/MAFbx) 발현 조절",
+            "diseases": ["Age-related sarcopenia", "Diabetic sarcopenia", "Drug-induced atrophy", "Sarcopenic obesity", "Disuse atrophy"],
+            "pathways": ["FoxO3/Atrogin-1/MuRF1", "Akt/FoxO3 (phosphorylation)", "AMPK/FoxO3", "Autophagy-lysosome", "SIRT1/FoxO3"],
+            "genes": ["FOXO3", "FOXO1", "FOXO4", "TRIM63", "FBXO32", "BNIP3 (autophagy)", "LC3B", "SIRT1"],
+            "biomarkers": ["p-FoxO3/FoxO3 ratio", "MuRF1 expression", "Grip strength", "Muscle mass"],
+        },
+        "AMPK/PGC-1alpha": {
+            "gene": "PRKAA1 / PPARGC1A", "chromosome": "5p13.1 / 4p15.2", "protein_size": "559 aa / 798 aa",
+            "function": "에너지 센서 및 미토콘드리아 생합성 마스터 조절자",
+            "diseases": ["Age-related sarcopenia", "Sarcopenic obesity", "Diabetic sarcopenia", "Metabolic syndrome", "Disuse atrophy"],
+            "pathways": ["AMPK/PGC-1alpha/TFAM", "Mitochondrial biogenesis", "SIRT1/PGC-1alpha", "AMPK/TSC2/mTOR", "Fatty acid oxidation"],
+            "genes": ["PRKAA1 (AMPKa1)", "PRKAA2 (AMPKa2)", "PPARGC1A (PGC-1a)", "TFAM", "NRF1", "NRF2", "SIRT1", "SIRT3"],
+            "biomarkers": ["p-AMPK level", "PGC-1alpha expression", "Mitochondrial DNA copy number", "Grip strength"],
+        },
+        "RIPK1/RIPK3": {
+            "gene": "RIPK1 / RIPK3", "chromosome": "6p25.2 / 14q12", "protein_size": "671 aa / 518 aa",
+            "function": "Necroptosis 핵심 키나제 - 프로그램된 괴사 및 염증 조절",
+            "diseases": ["Age-related sarcopenia", "IBD-associated myopathy", "Neurodegeneration", "Muscle necroptosis"],
+            "pathways": ["TNF-alpha/RIPK1/RIPK3/MLKL", "Necroptosis", "Caspase-8 apoptosis", "GSDME-mediated pyroptosis", "NF-kB (pro-survival)"],
+            "genes": ["RIPK1", "RIPK3", "MLKL", "CASP8", "FADD", "TNF", "TNFRSF1A", "GSDME"],
+            "biomarkers": ["p-RIPK3", "p-MLKL", "TNF-alpha", "Grip strength", "Gastrocnemius muscle index"],
+        },
+        "NF-kB": {
+            "gene": "NFKB1 / RELA", "chromosome": "4q24 / 11q13.1", "protein_size": "969 aa / 551 aa",
+            "function": "염증 마스터 전사인자 - 만성 염증 매개 근위축",
+            "diseases": ["Age-related sarcopenia", "Cancer cachexia", "Sarcopenic obesity", "Inflammatory myopathy", "Sepsis"],
+            "pathways": ["NF-kB canonical (IKK/IkBa)", "TNF-alpha/TNFR1/NF-kB", "IL-6/JAK-STAT3", "Inflammaging", "NLRP3 inflammasome"],
+            "genes": ["NFKB1", "RELA (p65)", "NFKBIA (IkBa)", "IKBKB (IKKb)", "TNF", "IL6", "IL1B", "NLRP3"],
+            "biomarkers": ["NF-kB activation", "IL-6", "TNF-alpha", "CRP", "Grip strength"],
+        },
+        "Androgen Receptor": {
+            "gene": "AR", "chromosome": "Xq12", "protein_size": "919 aa",
+            "function": "스테로이드 호르몬 수용체 - 근육 동화 작용 매개",
+            "diseases": ["Hypogonadal sarcopenia", "Cancer cachexia", "Age-related sarcopenia", "Sarcopenic obesity", "PCOS-related"],
+            "pathways": ["AR/Testosterone signaling", "AR/Wnt/beta-catenin", "IGF-1/PI3K/Akt (crosstalk)", "Myostatin inhibition (AR-mediated)", "Satellite cell differentiation"],
+            "genes": ["AR", "SRD5A1 (5aR1)", "SRD5A2 (5aR2)", "CYP19A1 (Aromatase)", "SHBG", "IGF1", "MSTN", "MYF5"],
+            "biomarkers": ["Free testosterone", "Total testosterone", "SHBG", "Grip strength", "Lean body mass"],
+        },
+        "GDF-15": {
+            "gene": "GDF15", "chromosome": "19p13.11", "protein_size": "308 aa",
+            "function": "GFRAL 수용체 리간드 - 식욕 억제 및 체중/근육량 조절",
+            "diseases": ["Cancer cachexia", "Age-related sarcopenia", "Sarcopenic obesity", "Mitochondrial disease", "Heart failure-cachexia"],
+            "pathways": ["GDF-15/GFRAL/RET", "MAPK/ERK", "Energy metabolism", "Appetite regulation (brainstem)", "Mitochondrial stress response"],
+            "genes": ["GDF15", "GFRAL", "RET", "NRTN", "ATF4 (stress response)", "CHOP", "FGF21", "CLCN3"],
+            "biomarkers": ["Serum GDF-15", "Body weight change", "Irisin", "IGF-1", "Grip strength"],
+        },
+        "HDAC6": {
+            "gene": "HDAC6", "chromosome": "Xp11.23", "protein_size": "1215 aa",
+            "function": "세포질 히스톤 탈아세틸화효소 - 미세소관/자가포식 조절",
+            "diseases": ["Age-related sarcopenia", "CMT neuropathy", "Neurodegeneration", "Cancer (multiple myeloma)", "Muscle atrophy"],
+            "pathways": ["HDAC6/alpha-tubulin deacetylation", "Aggresome-autophagy", "HSP90 client regulation", "Ubiquitin-proteasome", "TFEB/lysosome biogenesis"],
+            "genes": ["HDAC6", "TUBA1A (alpha-tubulin)", "HSP90AA1", "SQSTM1 (p62)", "MAP1LC3B (LC3B)", "HDAC4", "SIRT1", "TFEB"],
+            "biomarkers": ["Acetylated alpha-tubulin", "p62/SQSTM1", "Grip strength", "Muscle mass index"],
+        },
+    }
+
     target_counts = {t: len(idxs) for t, idxs in target_index.items() if len(t) > 1}
     sorted_targets = sorted(target_counts.keys(), key=lambda x: target_counts[x], reverse=True)
     top100 = sorted_targets[:100]
-    selected_target = st.selectbox("타겟 선택 (논문수 순)", top100,
-                                    format_func=lambda x: f"{x} ({target_counts.get(x,0)}건)")
+    selected_target = st.selectbox("Target Selection (by paper count)", top100,
+                                    format_func=lambda x: f"{x} ({target_counts.get(x,0)} papers)")
     if selected_target:
         idxs = target_index.get(selected_target, [])
         t_papers = df_ok.loc[df_ok.index.isin(idxs)]
-        c1, c2, c3 = st.columns(3)
-        c1.metric("관련 논문 수", f"{len(t_papers)}건")
         avg_rel = t_papers["관련도"].mean()
-        c2.metric("평균 관련도", f"{avg_rel:.1f}")
-        c3.metric("고관련도(4+)", f"{len(t_papers[t_papers['관련도']>=4])}건")
+
+        # ── 메트릭 카드 ──
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Papers", f"{len(t_papers)}")
+        c2.metric("Avg Relevance", f"{avg_rel:.1f}/5")
+        c3.metric("High Relevance(4+)", f"{len(t_papers[t_papers['관련도']>=4])}")
+        clinical_cnt = len(t_papers[t_papers["연구유형"] == "Clinical"]) if "연구유형" in t_papers.columns else 0
+        c4.metric("Clinical Studies", f"{clinical_cnt}")
+
         st.markdown("---")
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.markdown("#### 연관 화합물")
+
+        # ── PDB 정보 확인 ──
+        _tgt_pdb_info = SARCOPENIA_TARGET_PDB.get(selected_target, None)
+        _tgt_bio = TARGET_BIOLOGY.get(selected_target, None)
+
+        # ─────────────────────────────────────
+        # 상단: 3D Structure + Target Biology 카드
+        # ─────────────────────────────────────
+        if _tgt_pdb_info or _tgt_bio:
+            col_3d, col_bio = st.columns([3, 2])
+
+            with col_3d:
+                if _tgt_pdb_info:
+                    _pdb3 = _tgt_pdb_info["pdb"]
+                    _br3 = _tgt_pdb_info.get("binding_residues", "")
+                    _desc3 = _tgt_pdb_info.get("desc", "")
+                    _uni3 = _tgt_pdb_info.get("uniprot", "")
+
+                    _viewer3_html = f"""
+<!DOCTYPE html><html><head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background: #0a0e27; overflow:hidden; font-family: 'Segoe UI', system-ui, sans-serif; }}
+#vp3 {{ width:100%; height:420px; position:relative; border-radius:12px;
+    border: 1px solid rgba(30,136,229,0.3); box-shadow: 0 0 30px rgba(30,136,229,0.15); }}
+#info3 {{ position:absolute; top:10px; left:10px; z-index:100;
+    background: rgba(10,14,39,0.9); color:#4fc3f7; padding:8px 14px; border-radius:8px;
+    font-size:11px; border: 1px solid rgba(30,136,229,0.3); backdrop-filter: blur(10px); }}
+#info3 h4 {{ margin:0 0 3px 0; color:#90caf9; font-size:13px; }}
+#info3 p {{ margin:1px 0; color:#7899b8; font-size:10px; }}
+#ld3 {{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    color:#4fc3f7; font-size:13px; z-index:50; }}
+@keyframes sp3 {{ to {{ transform: rotate(360deg); }} }}
+.sp3 {{ display:inline-block; width:18px; height:18px; border:2px solid #4fc3f7;
+    border-top-color:transparent; border-radius:50%; animation: sp3 1s linear infinite;
+    vertical-align:middle; margin-right:6px; }}
+.pocket-label {{ position:absolute; bottom:10px; right:10px; z-index:100;
+    background: rgba(0,230,118,0.15); color:#00e676; padding:4px 10px; border-radius:6px;
+    font-size:10px; border: 1px solid rgba(0,230,118,0.3); }}
+</style></head><body>
+<div id="vp3">
+    <div id="info3">
+        <h4>{selected_target}</h4>
+        <p>PDB: {_pdb3} | UniProt: {_uni3}</p>
+        <p>{_desc3}</p>
+    </div>
+    <div id="ld3"><span class="sp3"></span>Loading PDB...</div>
+    <div class="pocket-label">Binding Pocket Highlighted</div>
+</div>
+<script>
+(function() {{
+    var el = document.getElementById("vp3");
+    var viewer = $3Dmol.createViewer(el, {{ backgroundColor: 0x0a0e27, antialias: true }});
+    fetch("https://files.rcsb.org/download/{_pdb3}.pdb")
+        .then(function(r) {{ if (!r.ok) throw new Error("HTTP "+r.status); return r.text(); }})
+        .then(function(data) {{
+            document.getElementById("ld3").style.display="none";
+            viewer.addModel(data, "pdb");
+            viewer.setStyle({{}}, {{ cartoon: {{ color: "spectrum", opacity: 0.82, thickness: 0.28 }} }});
+            var residues = "{_br3}".split(",");
+            for (var i=0; i<residues.length; i++) {{
+                var rn = residues[i].trim();
+                var num = parseInt(rn.replace(/[A-Za-z]/g, ""));
+                if (!isNaN(num)) {{
+                    viewer.setStyle({{resi: num}}, {{
+                        stick: {{ color: "#00e676", radius: 0.22 }},
+                        sphere: {{ color: "#00e676", radius: 0.38, opacity: 0.55 }},
+                        cartoon: {{ color: "#00e676", opacity: 0.95, thickness: 0.42 }}
+                    }});
+                    viewer.addLabel(rn, {{
+                        position: {{resi: num}}, backgroundColor: "rgba(0,230,118,0.8)",
+                        fontColor: "#0a0e27", fontSize: 9, borderThickness: 0.5
+                    }});
+                }}
+            }}
+            var nums = residues.map(function(r){{return parseInt(r.replace(/[A-Za-z]/g,""));}}).filter(function(n){{return !isNaN(n);}});
+            if (nums.length > 0) {{
+                viewer.addSurface($3Dmol.SurfaceType.VDW, {{ opacity: 0.2, color: "#00e676" }}, {{resi: nums}});
+            }}
+            viewer.zoomTo(); viewer.render();
+            function anim() {{ viewer.rotate(0.2, "y"); viewer.render(); requestAnimationFrame(anim); }}
+            anim();
+        }})
+        .catch(function(e) {{ document.getElementById("ld3").innerHTML = "Error: " + e.message; }});
+}})();
+</script></body></html>"""
+                    _comp3.html(_viewer3_html, height=440)
+                else:
+                    st.info("PDB 구조가 등록되지 않은 타겟입니다.")
+
+            with col_bio:
+                if _tgt_bio:
+                    st.markdown("#### Target Biology")
+                    st.markdown(f"""
+<div style="background:rgba(13,27,62,0.6); border:1px solid rgba(30,136,229,0.3); border-radius:10px; padding:14px; margin-bottom:10px;">
+    <div style="color:#90caf9; font-size:13px; font-weight:700; margin-bottom:6px;">{selected_target}</div>
+    <div style="color:#7899b8; font-size:11px; margin-bottom:4px;">Gene: <span style="color:#4fc3f7;">{_tgt_bio['gene']}</span> | Chr: {_tgt_bio['chromosome']}</div>
+    <div style="color:#7899b8; font-size:11px; margin-bottom:4px;">Protein: {_tgt_bio['protein_size']}</div>
+    <div style="color:#b0bec5; font-size:11px; line-height:1.4;">{_tgt_bio['function']}</div>
+</div>
+""", unsafe_allow_html=True)
+
+                    # Diseases
+                    st.markdown("#### Related Diseases")
+                    _dis_colors = ["#ff6b6b", "#ffa94d", "#ffd43b", "#69db7c", "#74c0fc"]
+                    _dis_html = ""
+                    for i, d in enumerate(_tgt_bio.get("diseases", [])[:5]):
+                        _dc = _dis_colors[i % len(_dis_colors)]
+                        _dis_html += f'<span style="display:inline-block;padding:3px 10px;margin:2px 4px 2px 0;border-radius:12px;font-size:11px;background:rgba({int(_dc[1:3],16)},{int(_dc[3:5],16)},{int(_dc[5:7],16)},0.15);color:{_dc};border:1px solid {_dc}40;">{d}</span>'
+                    st.markdown(_dis_html, unsafe_allow_html=True)
+
+                    # Key Genes
+                    st.markdown("#### Associated Genes")
+                    _gene_html = ""
+                    for g in _tgt_bio.get("genes", [])[:8]:
+                        _gene_html += f'<span style="display:inline-block;padding:2px 8px;margin:2px 3px;border-radius:6px;font-size:10px;font-family:monospace;background:rgba(79,195,247,0.1);color:#4fc3f7;border:1px solid rgba(79,195,247,0.25);">{g}</span>'
+                    st.markdown(_gene_html, unsafe_allow_html=True)
+
+                    # Biomarkers
+                    st.markdown("#### Key Biomarkers")
+                    _bm_html = ""
+                    for bm in _tgt_bio.get("biomarkers", [])[:5]:
+                        _bm_html += f'<span style="display:inline-block;padding:2px 8px;margin:2px 3px;border-radius:6px;font-size:10px;background:rgba(0,230,118,0.1);color:#69f0ae;border:1px solid rgba(0,230,118,0.25);">{bm}</span>'
+                    st.markdown(_bm_html, unsafe_allow_html=True)
+
+        # ─────────────────────────────────────
+        # 중단: Signaling Pathways + 연관 화합물
+        # ─────────────────────────────────────
+        st.markdown("---")
+        col_pw, col_cmp = st.columns(2)
+
+        with col_pw:
+            st.markdown("#### Signaling Pathways")
+            # 논문 기반 경로
+            t_path = get_top_items(t_papers, "신호전달경로", 10) if "신호전달경로" in t_papers.columns else []
+            # Biology DB 경로 병합
+            _bio_paths = _tgt_bio.get("pathways", []) if _tgt_bio else []
+            if _bio_paths:
+                _pw_html = ""
+                for i, pw in enumerate(_bio_paths[:6]):
+                    _pw_cnt = ""
+                    for tp, tc in t_path:
+                        if any(k.lower() in tp.lower() for k in pw.split("/")[:2]):
+                            _pw_cnt = f" ({tc} papers)"
+                            break
+                    _bar_w = max(30, min(100, 30 + i * 12))
+                    _pw_html += f"""<div style="margin:4px 0;padding:6px 10px;background:linear-gradient(90deg, rgba(30,136,229,0.2) {_bar_w}%, transparent {_bar_w}%);border-radius:6px;border-left:3px solid #1E88E5;">
+                        <span style="color:#90caf9;font-size:11px;font-weight:600;">{pw}</span>
+                        <span style="color:#546e7a;font-size:9px;">{_pw_cnt}</span>
+                    </div>"""
+                st.markdown(_pw_html, unsafe_allow_html=True)
+            elif t_path:
+                for pw, cnt in t_path[:8]:
+                    st.markdown(f'<div style="margin:3px 0;padding:4px 10px;background:rgba(30,136,229,0.1);border-radius:6px;border-left:3px solid #1E88E5;color:#90caf9;font-size:11px;">{pw} <span style="color:#546e7a;">({cnt})</span></div>', unsafe_allow_html=True)
+
+        with col_cmp:
+            st.markdown("#### Related Compounds")
             t_comp = get_top_items(t_papers, "화합물(Compound)", 10)
             if t_comp:
-                t_comp_df = pd.DataFrame(t_comp, columns=["화합물", "건수"])
-                fig = px.bar(t_comp_df, x="건수", y="화합물", orientation="h",
-                            color="건수", color_continuous_scale="Oranges")
-                fig.update_layout(height=300, yaxis=dict(autorange="reversed"), margin=dict(t=10, b=10))
+                t_comp_df = pd.DataFrame(t_comp, columns=["Compound", "Papers"])
+                fig = px.bar(t_comp_df, x="Papers", y="Compound", orientation="h",
+                            color="Papers", color_continuous_scale="YlOrRd")
+                fig.update_layout(height=280, yaxis=dict(autorange="reversed"), margin=dict(t=5, b=5, l=5, r=5),
+                                  showlegend=False, coloraxis_showscale=False)
                 st.plotly_chart(_apply_dark(fig), use_container_width=True)
-        with col_r:
-            st.markdown("#### 관련 신호전달 경로")
-            t_path = get_top_items(t_papers, "신호전달경로", 10) if "신호전달경로" in t_papers.columns else []
-            if t_path:
-                for pw, cnt in t_path:
-                    st.write(f"- **{pw}** ({cnt}건)")
-            st.markdown("#### 연구유형 분포")
-            if "연구유형" in t_papers.columns:
-                for stype, cnt in t_papers["연구유형"].value_counts().items():
-                    st.write(f"- {stype}: {cnt}건")
 
-        st.markdown("#### 핵심 발견 (고관련도 순)")
-        high_rel = t_papers.sort_values("관련도", ascending=False)
-        for _, row in high_rel.head(8).iterrows():
-            finding = row.get("핵심발견", "")
-            if finding and str(finding) != "nan":
-                rel = int(row.get("관련도", 0))
-                st.markdown(f"[{rel}/5] **{row['파일명'][:60]}...**")
-                st.caption(finding)
+        # ─────────────────────────────────────
+        # 하단: 핵심 발견 + 연구유형
+        # ─────────────────────────────────────
+        st.markdown("---")
+        col_find, col_type = st.columns([3, 1])
+
+        with col_find:
+            st.markdown("#### Key Findings (High Relevance)")
+            high_rel = t_papers.sort_values("관련도", ascending=False)
+            for _, row in high_rel.head(6).iterrows():
+                finding = row.get("핵심발견", "")
+                if finding and str(finding) != "nan":
+                    rel = int(row.get("관련도", 0))
+                    _stars = "★" * rel + "☆" * (5 - rel)
+                    st.markdown(f"""<div style="background:rgba(13,27,62,0.4);border-radius:8px;padding:8px 12px;margin:4px 0;border-left:3px solid {'#00e676' if rel>=4 else '#ffd740' if rel>=3 else '#78909c'};">
+                        <div style="color:#546e7a;font-size:9px;margin-bottom:2px;">{_stars} {row['파일명'][:55]}...</div>
+                        <div style="color:#b0bec5;font-size:11px;line-height:1.4;">{str(finding)[:200]}</div>
+                    </div>""", unsafe_allow_html=True)
+
+        with col_type:
+            st.markdown("#### Study Types")
+            if "연구유형" in t_papers.columns:
+                _type_counts = t_papers["연구유형"].value_counts()
+                for stype, cnt in _type_counts.items():
+                    if str(stype) != "nan":
+                        _pct = cnt / len(t_papers) * 100
+                        st.markdown(f"""<div style="margin:3px 0;padding:4px 8px;background:rgba(13,27,62,0.4);border-radius:6px;">
+                            <div style="color:#90caf9;font-size:11px;">{stype}</div>
+                            <div style="background:rgba(30,136,229,0.15);border-radius:3px;height:6px;margin:2px 0;">
+                                <div style="background:#1E88E5;width:{_pct}%;height:100%;border-radius:3px;"></div>
+                            </div>
+                            <div style="color:#546e7a;font-size:9px;">{cnt} ({_pct:.0f}%)</div>
+                        </div>""", unsafe_allow_html=True)
 
         # 프로파일 다운로드
-        profile_text = f"""# {selected_target} - Target Profile Report\n생성일: {datetime.now().strftime('%Y-%m-%d')}\n\n## 기본 정보\n- 관련 논문: {len(t_papers)}건\n- 평균 관련도: {avg_rel:.1f}/5.0\n"""
-        st.download_button("Target Profile (.md)", profile_text, f"{selected_target}_profile.md", "text/markdown")
+        _bio_text = ""
+        if _tgt_bio:
+            _bio_text = f"\n## Target Biology\n- Gene: {_tgt_bio['gene']}\n- Chromosome: {_tgt_bio['chromosome']}\n- Function: {_tgt_bio['function']}\n- Diseases: {', '.join(_tgt_bio['diseases'])}\n- Pathways: {', '.join(_tgt_bio['pathways'])}\n- Genes: {', '.join(_tgt_bio['genes'])}\n"
+        profile_text = f"# {selected_target} - Target Profile Report\nDate: {datetime.now().strftime('%Y-%m-%d')}\n\n## Summary\n- Papers: {len(t_papers)}\n- Avg Relevance: {avg_rel:.1f}/5.0\n- Clinical Studies: {clinical_cnt}\n{_bio_text}"
+        st.download_button("Download Target Profile (.md)", profile_text, f"{selected_target}_profile.md", "text/markdown")
 
 # ============================================================
 # 탭 4: 화합물 분석
@@ -719,22 +1019,6 @@ with tab5:
 
     st.markdown("### Compound-Protein Interaction (CPI) Binding Visualization")
     st.caption("3Dmol.js & RCSB PDB / UniProt / PubChem 3D API integration")
-
-    # --- 주요 근감소증 타겟의 PDB ID 매핑 ---
-    SARCOPENIA_TARGET_PDB = {
-        "Myostatin/GDF-8": {"pdb": "3HH2", "uniprot": "O14793", "desc": "Myostatin (Growth Differentiation Factor 8) - 근육 성장 억제 인자", "binding_residues": "W28,W30,Y33,D56,F63,K65,H67,Y111"},
-        "ActRIIB": {"pdb": "2QLU", "uniprot": "Q13705", "desc": "Activin Receptor Type IIB - Myostatin 수용체", "binding_residues": "E28,Y31,K56,E63,K74,P83,F101"},
-        "mTOR/PI3K/Akt": {"pdb": "4DRH", "uniprot": "P42345", "desc": "mTOR kinase - 단백질 합성 촉진 경로", "binding_residues": "L2185,Y2225,D2195,V2240,M2345"},
-        "IGF-1/IGF-1R": {"pdb": "1IMX", "uniprot": "P05019", "desc": "Insulin-like Growth Factor 1 - 근육 성장 촉진", "binding_residues": "G1,P2,E3,T4,L5,C6"},
-        "MuRF1/MAFbx": {"pdb": "4FZT", "uniprot": "Q969Q1", "desc": "E3 ubiquitin ligase MuRF1 - 근단백 분해", "binding_residues": "C23,H25,C44,C47,C54,H57"},
-        "FoxO3": {"pdb": "2UZK", "uniprot": "O43524", "desc": "Forkhead box O3 - 근위축 전사인자", "binding_residues": "H212,S215,W234,H242,S256"},
-        "AMPK/PGC-1alpha": {"pdb": "4CFE", "uniprot": "Q13131", "desc": "AMP-activated protein kinase - 에너지 센서", "binding_residues": "R83,D88,T106,N144,D151"},
-        "RIPK1/RIPK3": {"pdb": "4ITJ", "uniprot": "Q9Y572", "desc": "Receptor-interacting protein kinase 3 - Necroptosis 매개", "binding_residues": "L27,V35,A48,K50,E60,D142"},
-        "NF-kB": {"pdb": "1NFI", "uniprot": "Q04206", "desc": "Nuclear Factor kappa B - 염증 전사인자", "binding_residues": "R33,E39,R57,Y60,K221,R246"},
-        "Androgen Receptor": {"pdb": "1E3G", "uniprot": "P10275", "desc": "Androgen Receptor - SARMs 타겟", "binding_residues": "L704,N705,R752,F764,M780,T877"},
-        "GDF-15": {"pdb": "5VZ3", "uniprot": "Q99988", "desc": "Growth Differentiation Factor 15 - 식욕/체중 조절", "binding_residues": "R189,H193,D200,W203,I206"},
-        "HDAC6": {"pdb": "5EDU", "uniprot": "Q9UBN7", "desc": "Histone Deacetylase 6 - 미세소관/자가포식 조절", "binding_residues": "H573,H574,D612,H614,D705,L749"},
-    }
 
     # --- 주요 화합물과 결합 타겟 매핑 (binding_sites + indication + moa_short) ---
     COMPOUND_TARGET_MAP = {
