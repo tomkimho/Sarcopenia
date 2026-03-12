@@ -537,31 +537,62 @@ with tab1:
         fig2.update_layout(height=350, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(_apply_dark(fig2), use_container_width=True)
 
-    # 치료분류 분포 (개별 카테고리로 파싱)
+    # 치료분류 분포 (개별 카테고리로 파싱 → 1-2단어 축약, Diagnostic 제외)
     if "치료분류" in df_ok.columns:
+        # 카테고리 정규화 매핑 (긴 이름 → 1-2단어)
+        _cat_normalize = {
+            "Small molecule": "Small Mol.",
+            "small molecule": "Small Mol.",
+            "Natural product": "Natural Prod.",
+            "natural product": "Natural Prod.",
+            "Non-pharmaceutical intervention": "Non-Pharma",
+            "Non-pharmaceutical": "Non-Pharma",
+            "non-pharmaceutical intervention": "Non-Pharma",
+            "Non-pharmacological": "Non-Pharma",
+            "non-pharmacological": "Non-Pharma",
+            "Gene therapy": "Gene Therapy",
+            "gene therapy": "Gene Therapy",
+            "Cell therapy": "Cell Therapy",
+            "cell therapy": "Cell Therapy",
+            "Hormone therapy": "Hormone",
+            "hormone therapy": "Hormone",
+            "Combination": "Combination",
+            "combination": "Combination",
+            "Biologic": "Biologic",
+            "biologic": "Biologic",
+            "Peptide": "Peptide",
+            "peptide": "Peptide",
+            "Nutritional": "Nutritional",
+            "nutritional": "Nutritional",
+            "Probiotic": "Probiotic",
+            "probiotic": "Probiotic",
+            "Device": "Device",
+            "device": "Device",
+        }
+        _cat_exclude = {"Diagnostic", "diagnostic", "Diagnosis", "diagnosis"}
         _cat_items = []
         for v in df_ok["치료분류"].dropna():
             s = str(v).strip()
-            # "['Nutritional', 'Diagnostic']" 형태 파싱
+            tokens = []
             if s.startswith("["):
                 for item in s.strip("[]").split(","):
-                    item = item.strip().strip("'\" ")
-                    if item and len(item) > 1:
-                        _cat_items.append(item)
+                    tokens.append(item.strip().strip("'\" "))
             elif "," in s:
                 for item in s.split(","):
-                    item = item.strip().strip("'\" ")
-                    if item and len(item) > 1:
-                        _cat_items.append(item)
+                    tokens.append(item.strip().strip("'\" "))
             else:
-                if s and len(s) > 1:
-                    _cat_items.append(s)
+                tokens.append(s)
+            for t in tokens:
+                t = t.strip()
+                if not t or len(t) <= 1 or t in _cat_exclude:
+                    continue
+                _cat_items.append(_cat_normalize.get(t, t))
         _cat_counter = Counter(_cat_items)
-        _cat_top = _cat_counter.most_common(12)
+        _cat_top = _cat_counter.most_common(10)
         if _cat_top:
             cat_dist = pd.DataFrame(_cat_top, columns=["Category", "Papers"])
             fig_cat = px.bar(cat_dist, x="Papers", y="Category", orientation="h",
-                             title="Treatment Classification",
+                             title="치료 분류별 분포",
                              color="Papers", color_continuous_scale="Teal")
             fig_cat.update_layout(height=350, yaxis=dict(autorange="reversed"),
                                   margin=dict(t=40, b=20, l=20, r=20),
@@ -2225,6 +2256,19 @@ with tab8:
 with tab9:
     st.markdown("### AI Drug Candidates")
 
+    # ── 안내 배너 ──
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,rgba(255,152,0,0.15),rgba(255,87,34,0.10));
+                border-left:4px solid #FF9800;border-radius:8px;padding:14px 20px;margin-bottom:20px;">
+        <span style="font-size:15px;color:#FFB74D;font-weight:700;">⚠ AI-Generated Virtual Compounds</span><br>
+        <span style="font-size:13px;color:#B0BEC5;">
+        본 후보물질은 <b>AI(Claude)가 문헌 분석 기반으로 새롭게 설계한 가상 분자</b>입니다.
+        기존 승인 약물이 아니며, 실제 합성 및 실험적 검증이 필요합니다.
+        Novelty Score가 높을수록 기존 약물 대비 구조적 차별성이 큽니다.
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
     _candidates_data = None
     for d in _search_dirs + [os.path.join(d, 'output') for d in _search_dirs]:
         cm_path = os.path.join(d, 'candidate_molecules.json')
@@ -2237,24 +2281,132 @@ with tab9:
                 pass
 
     if _candidates_data:
-        total = _candidates_data.get('total_candidates', 0)
-        st.success(f"총 {total}개 후보물질")
         candidates = _candidates_data.get('candidates', [])
-        if candidates:
+        # Valid만 필터링
+        valid_candidates = [c for c in candidates if c.get('validation_status', '') == 'Valid']
+        invalid_count = len(candidates) - len(valid_candidates)
+
+        # 통계 배너
+        col_s1, col_s2, col_s3 = st.columns(3)
+        with col_s1:
+            st.markdown(f"""
+            <div style="background:rgba(0,137,123,0.15);border-radius:10px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#80CBC4;">{len(valid_candidates)}</div>
+                <div style="font-size:12px;color:#B0BEC5;">Valid Candidates</div>
+            </div>""", unsafe_allow_html=True)
+        with col_s2:
+            _targets_set = set(c.get('target', '') for c in valid_candidates)
+            st.markdown(f"""
+            <div style="background:rgba(33,150,243,0.15);border-radius:10px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#90CAF9;">{len(_targets_set)}</div>
+                <div style="font-size:12px;color:#B0BEC5;">Targets Covered</div>
+            </div>""", unsafe_allow_html=True)
+        with col_s3:
+            _avg_nov = sum(c.get('novelty_score', 0) for c in valid_candidates) / max(len(valid_candidates), 1)
+            st.markdown(f"""
+            <div style="background:rgba(255,152,0,0.15);border-radius:10px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#FFB74D;">{_avg_nov:.1f}/10</div>
+                <div style="font-size:12px;color:#B0BEC5;">Avg Novelty Score</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+        if invalid_count > 0:
+            st.caption(f"※ SMILES 유효성 미통과 {invalid_count}건은 표시에서 제외됨")
+
+        if valid_candidates:
             by_target = defaultdict(list)
-            for c in candidates:
+            for c in valid_candidates:
                 by_target[c.get('target', 'Unknown')].append(c)
+
             for target, cands in by_target.items():
-                st.markdown(f"#### {target}")
+                st.markdown(f"#### 🎯 {target}")
                 for i, c in enumerate(cands, 1):
-                    valid = c.get('validation_status', '') == 'Valid'
-                    label = '[Valid]' if valid else '[Check]'
-                    with st.expander(f"{label} Candidate #{i}: {c.get('smiles', 'N/A')[:50]}"):
-                        st.code(c.get('smiles', ''), language=None)
-                        st.markdown(f"**근거:** {c.get('rationale', 'N/A')}")
-                        st.markdown(f"**Novelty Score:** {c.get('novelty_score', 'N/A')}")
+                    _smi = c.get('smiles', '')
+                    _nov = c.get('novelty_score', 0)
+                    _cat = c.get('therapeutic_category', 'N/A')
+                    # Novelty 색상
+                    _nov_color = "#4CAF50" if _nov >= 8 else ("#FFB74D" if _nov >= 6 else "#EF5350")
+                    _nov_stars = "★" * _nov + "☆" * (10 - _nov)
+
+                    with st.expander(f"Candidate #{i}  |  Novelty {_nov}/10  |  {_cat}  |  {_smi[:45]}..."):
+                        # ── 상단: 구조 이미지 + 기본 정보 ──
+                        _c_col1, _c_col2 = st.columns([1, 2])
+                        with _c_col1:
+                            # 2D 구조 이미지 (PubChem)
+                            import urllib.parse
+                            _encoded_smi = urllib.parse.quote(_smi, safe='')
+                            _struct_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{_encoded_smi}/PNG?image_size=260x200"
+                            st.markdown(f"""
+                            <div style="background:#1a1a2e;border-radius:8px;padding:8px;text-align:center;border:1px solid #333;">
+                                <img src="{_struct_url}" style="max-width:100%;border-radius:4px;"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                <div style="display:none;color:#666;font-size:12px;padding:30px;">구조 이미지 생성 불가</div>
+                                <div style="font-size:10px;color:#666;margin-top:4px;">PubChem 2D Structure</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        with _c_col2:
+                            # SMILES
+                            st.code(_smi, language=None)
+                            # Novelty 바
+                            st.markdown(f"""
+                            <div style="margin:8px 0;">
+                                <span style="color:#B0BEC5;font-size:12px;font-weight:600;">Novelty Score</span>
+                                <div style="background:#1a1a2e;border-radius:6px;height:24px;margin-top:4px;overflow:hidden;">
+                                    <div style="background:linear-gradient(90deg,{_nov_color},rgba(255,255,255,0.1));
+                                                width:{_nov*10}%;height:100%;border-radius:6px;
+                                                display:flex;align-items:center;justify-content:center;">
+                                        <span style="font-size:12px;font-weight:700;color:#fff;">{_nov}/10</span>
+                                    </div>
+                                </div>
+                                <span style="font-size:10px;color:{_nov_color};">{_nov_stars}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            # 카테고리 + 타깃 배지
+                            st.markdown(f"""
+                            <span style="background:#1565C0;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">{_cat}</span>
+                            <span style="background:#00695C;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-left:6px;">Target: {target}</span>
+                            """, unsafe_allow_html=True)
+
+                        # ── 설계 근거 ──
+                        st.markdown(f"""
+                        <div style="background:rgba(0,137,123,0.08);border-radius:8px;padding:12px 16px;margin:12px 0;
+                                    border-left:3px solid #00897B;">
+                            <div style="font-size:12px;font-weight:700;color:#80CBC4;margin-bottom:6px;">💡 설계 근거 (Design Rationale)</div>
+                            <div style="font-size:13px;color:#CFD8DC;line-height:1.6;">{c.get('rationale', 'N/A')}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # ── MoA ──
                         if c.get('mechanism'):
-                            st.markdown(f"**기전:** {c.get('mechanism')}")
+                            st.markdown(f"""
+                            <div style="background:rgba(33,150,243,0.08);border-radius:8px;padding:12px 16px;margin:8px 0;
+                                        border-left:3px solid #2196F3;">
+                                <div style="font-size:12px;font-weight:700;color:#90CAF9;margin-bottom:6px;">⚙️ Mechanism of Action</div>
+                                <div style="font-size:12px;color:#B0BEC5;line-height:1.6;">{c.get('mechanism')}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        # ── 장점 vs 안전성 ──
+                        _adv_col, _saf_col = st.columns(2)
+                        with _adv_col:
+                            if c.get('advantages'):
+                                st.markdown(f"""
+                                <div style="background:rgba(76,175,80,0.08);border-radius:8px;padding:12px 16px;
+                                            border-left:3px solid #4CAF50;height:100%;">
+                                    <div style="font-size:12px;font-weight:700;color:#81C784;margin-bottom:6px;">✅ 기존 약물 대비 장점</div>
+                                    <div style="font-size:12px;color:#B0BEC5;line-height:1.6;">{c.get('advantages')}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        with _saf_col:
+                            if c.get('safety_concerns'):
+                                st.markdown(f"""
+                                <div style="background:rgba(239,83,80,0.08);border-radius:8px;padding:12px 16px;
+                                            border-left:3px solid #EF5350;height:100%;">
+                                    <div style="font-size:12px;font-weight:700;color:#EF9A9A;margin-bottom:6px;">⚠️ 안전성 고려사항</div>
+                                    <div style="font-size:12px;color:#B0BEC5;line-height:1.6;">{c.get('safety_concerns')}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
     else:
         st.info("Drug candidates not yet generated. Execute: python scripts/11_drug_candidates.py")
 
