@@ -415,12 +415,29 @@ with st.sidebar:
     st.metric("검색 결과", f"{len(filtered)} / {len(df_ok)}건")
     st.caption(f"마지막 업데이트: {datetime.now().strftime('%Y-%m-%d')}")
 
-    # 치료분류 필터 (근감소증 특화)
+    # 치료분류 필터 (개별 카테고리로 파싱)
     if "치료분류" in df_ok.columns:
-        cat_types = sorted(df_ok["치료분류"].dropna().unique().tolist())
+        _all_cats = set()
+        for v in df_ok["치료분류"].dropna():
+            s = str(v).strip()
+            if s.startswith("["):
+                for item in s.strip("[]").split(","):
+                    item = item.strip().strip("'\" ")
+                    if item and len(item) > 1:
+                        _all_cats.add(item)
+            elif "," in s:
+                for item in s.split(","):
+                    item = item.strip().strip("'\" ")
+                    if item and len(item) > 1:
+                        _all_cats.add(item)
+            else:
+                if s and len(s) > 1:
+                    _all_cats.add(s)
+        cat_types = sorted(_all_cats)
         if cat_types:
-            selected_cats = st.multiselect("치료 분류", cat_types, default=cat_types)
-            filtered = filtered[filtered["치료분류"].isin(selected_cats)]
+            selected_cats = st.multiselect("Treatment Category", cat_types, default=cat_types)
+            filtered = filtered[filtered["치료분류"].apply(
+                lambda x: any(c in str(x) for c in selected_cats) if pd.notna(x) else False)]
 
     # 질환아형 필터
     if "질환아형" in df_ok.columns:
@@ -520,16 +537,36 @@ with tab1:
         fig2.update_layout(height=350, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(_apply_dark(fig2), use_container_width=True)
 
-    # 치료분류 분포 (근감소증 특화)
+    # 치료분류 분포 (개별 카테고리로 파싱)
     if "치료분류" in df_ok.columns:
-        cat_dist = df_ok["치료분류"].value_counts().reset_index()
-        cat_dist.columns = ["치료분류", "건수"]
-        fig_cat = px.bar(cat_dist, x="건수", y="치료분류", orientation="h",
-                         title="치료 분류별 분포",
-                         color="건수", color_continuous_scale="Teal")
-        fig_cat.update_layout(height=350, yaxis=dict(autorange="reversed"),
-                              margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(_apply_dark(fig_cat), use_container_width=True)
+        _cat_items = []
+        for v in df_ok["치료분류"].dropna():
+            s = str(v).strip()
+            # "['Nutritional', 'Diagnostic']" 형태 파싱
+            if s.startswith("["):
+                for item in s.strip("[]").split(","):
+                    item = item.strip().strip("'\" ")
+                    if item and len(item) > 1:
+                        _cat_items.append(item)
+            elif "," in s:
+                for item in s.split(","):
+                    item = item.strip().strip("'\" ")
+                    if item and len(item) > 1:
+                        _cat_items.append(item)
+            else:
+                if s and len(s) > 1:
+                    _cat_items.append(s)
+        _cat_counter = Counter(_cat_items)
+        _cat_top = _cat_counter.most_common(12)
+        if _cat_top:
+            cat_dist = pd.DataFrame(_cat_top, columns=["Category", "Papers"])
+            fig_cat = px.bar(cat_dist, x="Papers", y="Category", orientation="h",
+                             title="Treatment Classification",
+                             color="Papers", color_continuous_scale="Teal")
+            fig_cat.update_layout(height=350, yaxis=dict(autorange="reversed"),
+                                  margin=dict(t=40, b=20, l=20, r=20),
+                                  showlegend=False, coloraxis_showscale=False)
+            st.plotly_chart(_apply_dark(fig_cat), use_container_width=True)
 
     # Top 타겟
     top_targets = get_top_items(df_ok, "타겟(Target)", 15, normalize_target)
